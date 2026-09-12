@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://dfgdkgqmjeov"]
+
+[ext_resource type="PackedScene" uid="uid://b7g6ue0hc6vga" path="res://Scenes/enemies/boss_enemy.tscn" id="1_2s7ru"]
+[ext_resource type="Script" uid="uid://bwlylnk5lpo5n" path="res://scripts/room5_boss.gd" id="1_boss_script"]
+
+[node name="Room5_Boss" type="Node2D"]
+script = ExtResource("1_boss_script")
+
+[node name="BossEnemy" parent="." instance=ExtResource("1_2s7ru")]

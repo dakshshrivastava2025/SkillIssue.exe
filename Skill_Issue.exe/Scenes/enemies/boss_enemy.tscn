@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://b7g6ue0hc6vga"]
+
+[ext_resource type="Script" uid="uid://iighte1udtsa" path="res://scripts/boss_enemy.gd" id="1_g0nt2"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hnbkh"]
+size = Vector2(72, 72)
+
+[node name="BossEnemy" type="CharacterBody2D"]
+script = ExtResource("1_g0nt2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-1, -0.5)
+shape = SubResource("RectangleShape2D_hnbkh")
+
+[node name="DialogueLabel" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="HealthBar" type="ProgressBar" parent="."]
+offset_right = 4.0
+offset_bottom = 27.0

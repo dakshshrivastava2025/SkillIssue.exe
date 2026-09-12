@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://bwc8b866ysfta"]
+
+[ext_resource type="Script" uid="uid://b4crprxk2s6fm" path="res://scripts/room2_icy.gd" id="1_dt2qv"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_d466i"]
+size = Vector2(900, 500)
+
+[node name="Room2_Icy" type="Node2D"]
+script = ExtResource("1_dt2qv")
+
+[node name="WarningLabel" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="IceZone" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="IceZone"]
+shape = SubResource("RectangleShape2D_d466i")
+
+[node name="SpawnPoints" type="Node2D" parent="."]
