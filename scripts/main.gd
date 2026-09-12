@@ -29,6 +29,7 @@ func _ready() -> void:
 	
 	if player:
 		player.health_changed.connect(hud.update_player_hp)
+		hud.update_player_hp(player.current_health, player.max_health)
 	if boss:
 		boss.boss_health_changed.connect(hud.update_boss_hp)
 		boss.boss_defeated.connect(_on_boss_defeated)

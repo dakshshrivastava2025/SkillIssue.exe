@@ -173,10 +173,10 @@ mouse_filter = 2
 layout_mode = 0
 offset_left = 60.0
 offset_top = 20.0
-offset_right = 170.0
+offset_right = 360.0
 offset_bottom = 43.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-text = "PLAYER HP"
+text = "PLAYER: 100 / 100 HP"
 
 [node name="PlayerHPBar" type="ProgressBar" parent="CanvasLayer/HUDController/HUD"]
 layout_mode = 0
@@ -185,6 +185,7 @@ offset_top = 45.0
 offset_right = 360.0
 offset_bottom = 65.0
 value = 100.0
+show_percentage = false
 
 [node name="BossHPLabel" type="Label" parent="CanvasLayer/HUDController/HUD"]
 layout_mode = 1
@@ -197,7 +198,7 @@ offset_right = -60.0
 offset_bottom = 43.0
 grow_horizontal = 0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-text = "BOSS HP"
+text = "DARK WIZARD: 600 / 600 HP"
 horizontal_alignment = 2
 
 [node name="BossHPBar" type="ProgressBar" parent="CanvasLayer/HUDController/HUD"]
@@ -211,6 +212,7 @@ offset_right = -60.0
 offset_bottom = 65.0
 grow_horizontal = 0
 value = 100.0
+show_percentage = false
 
 [node name="StatusLabel" type="Label" parent="CanvasLayer/HUDController/HUD"]
 layout_mode = 1

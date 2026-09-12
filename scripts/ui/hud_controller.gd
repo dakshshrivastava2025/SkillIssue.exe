@@ -4,7 +4,9 @@ extends Control
 ## Active Debuff Badges, Boss Dialogue, and Full Death Screen.
 
 @onready var player_hp_bar: ProgressBar = $HUD/PlayerHPBar
+@onready var player_hp_label: Label = $HUD/PlayerHPLabel
 @onready var boss_hp_bar: ProgressBar = $HUD/BossHPBar
+@onready var boss_hp_label: Label = $HUD/BossHPLabel
 @onready var status_label: Label = $HUD/StatusLabel
 
 # AI Director On-Screen Prompts & Dialogue
@@ -33,6 +35,11 @@ func _ready() -> void:
 	dialogue_box.visible = false
 	death_screen.visible = false
 	
+	if player_hp_bar:
+		player_hp_bar.show_percentage = false
+	if boss_hp_bar:
+		boss_hp_bar.show_percentage = false
+	
 	if retry_btn:
 		retry_btn.pressed.connect(_on_retry_pressed)
 	
@@ -45,12 +52,16 @@ func _ready() -> void:
 func update_player_hp(curr: int, max_val: int) -> void:
 	player_hp_bar.max_value = max_val
 	player_hp_bar.value = curr
+	if player_hp_label:
+		player_hp_label.text = "PLAYER: %d / %d HP" % [max(0, curr), max_val]
 	if curr <= 0:
 		_show_death_screen()
 
 func update_boss_hp(curr: int, max_val: int) -> void:
 	boss_hp_bar.max_value = max_val
 	boss_hp_bar.value = curr
+	if boss_hp_label:
+		boss_hp_label.text = "DARK WIZARD: %d / %d HP" % [max(0, curr), max_val]
 	if curr <= 0 and status_label:
 		status_label.text = "BOSS DEFEATED! Open the chest to proceed."
 

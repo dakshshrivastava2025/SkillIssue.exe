@@ -133,7 +133,7 @@ func _physics_process(delta: float) -> void:
 		State.ATTACK_MELEE:
 			velocity = Vector2.ZERO
 			if not has_dealt_damage_this_attack:
-				_check_single_damage_hit(melee_area, 35) # 35 DMG close strike
+				_check_single_damage_hit(melee_area, 20) # 20 DMG close strike
 			if state_timer <= 0:
 				melee_collision.disabled = true
 				_set_state(State.RETREAT, 0.50) # Generous 0.50s retreat window to counter-attack
@@ -199,7 +199,7 @@ func _execute_melee_attack() -> void:
 	if sfx_beam and sfx_beam.stream:
 		sfx_beam.play()
 		
-	_check_single_damage_hit(melee_area, 35)
+	_check_single_damage_hit(melee_area, 20)
 
 func _start_thin_telegraph() -> void:
 	if player_target:
