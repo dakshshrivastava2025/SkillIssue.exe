@@ -1,57 +1,89 @@
-[gd_scene load_steps=10 format=3 uid="uid://mainarena001"]
+[gd_scene load_steps=12 format=3 uid="uid://mainarena001"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
-[ext_resource type="PackedScene" uid="uid://c3qg0kplayer01" path="res://scenes/player.tscn" id="2_player"]
-[ext_resource type="PackedScene" uid="uid://d1w8boss0001" path="res://scenes/boss.tscn" id="3_boss"]
-[ext_resource type="Script" path="res://scripts/ui/hud_controller.gd" id="4_hud"]
-[ext_resource type="Texture2D" path="res://assets/dungeon.png" id="5_dungeon_tex"]
+[ext_resource type="Texture2D" path="res://assets/Grass-01.png" id="2_floor_tex"]
+[ext_resource type="PackedScene" uid="uid://c3qg0kplayer01" path="res://scenes/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" uid="uid://d1w8boss0001" path="res://scenes/boss.tscn" id="4_boss"]
+[ext_resource type="PackedScene" uid="uid://chest001" path="res://scenes/treasure_chest.tscn" id="5_chest"]
+[ext_resource type="Script" path="res://scripts/ui/hud_controller.gd" id="6_hud"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_floor"]
+atlas = ExtResource("2_floor_tex")
+region = Rect2(0, 0, 64, 64)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_top"]
-size = Vector2(1280, 40)
+size = Vector2(1280, 48)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_bottom"]
-size = Vector2(1280, 40)
+size = Vector2(1280, 48)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_left"]
-size = Vector2(40, 720)
+size = Vector2(48, 720)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_right"]
-size = Vector2(40, 720)
+size = Vector2(48, 720)
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
 
-[node name="FloorDungeonTiles" type="TextureRect" parent="."]
+[node name="ArenaVisual" type="Node2D" parent="."]
 z_index = -10
+
+[node name="FloorRect" type="TextureRect" parent="ArenaVisual"]
 offset_right = 1280.0
 offset_bottom = 720.0
-texture = ExtResource("5_dungeon_tex")
+texture = SubResource("AtlasTexture_floor")
 stretch_mode = 1
+
+[node name="WallTop" type="ColorRect" parent="ArenaVisual"]
+offset_right = 1280.0
+offset_bottom = 48.0
+color = Color(0.12, 0.14, 0.2, 1)
+
+[node name="WallBottom" type="ColorRect" parent="ArenaVisual"]
+offset_top = 672.0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.12, 0.14, 0.2, 1)
+
+[node name="WallLeft" type="ColorRect" parent="ArenaVisual"]
+offset_right = 48.0
+offset_bottom = 720.0
+color = Color(0.12, 0.14, 0.2, 1)
+
+[node name="WallRight" type="ColorRect" parent="ArenaVisual"]
+offset_left = 1232.0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.12, 0.14, 0.2, 1)
 
 [node name="ArenaBounds" type="StaticBody2D" parent="."]
 collision_mask = 6
 
 [node name="TopWall" type="CollisionShape2D" parent="ArenaBounds"]
-position = Vector2(640, 20)
+position = Vector2(640, 24)
 shape = SubResource("RectangleShape2D_wall_top")
 
 [node name="BottomWall" type="CollisionShape2D" parent="ArenaBounds"]
-position = Vector2(640, 700)
+position = Vector2(640, 696)
 shape = SubResource("RectangleShape2D_wall_bottom")
 
 [node name="LeftWall" type="CollisionShape2D" parent="ArenaBounds"]
-position = Vector2(20, 360)
+position = Vector2(24, 360)
 shape = SubResource("RectangleShape2D_wall_left")
 
 [node name="RightWall" type="CollisionShape2D" parent="ArenaBounds"]
-position = Vector2(1260, 360)
+position = Vector2(1256, 360)
 shape = SubResource("RectangleShape2D_wall_right")
 
-[node name="Player" parent="." instance=ExtResource("2_player")]
-position = Vector2(320, 360)
+[node name="TreasureChest" parent="." instance=ExtResource("5_chest")]
+position = Vector2(640, 120)
 
-[node name="Boss" parent="." instance=ExtResource("3_boss")]
-position = Vector2(960, 360)
+[node name="Player" parent="." instance=ExtResource("3_player")]
+position = Vector2(320, 420)
+
+[node name="Boss" parent="." instance=ExtResource("4_boss")]
+position = Vector2(960, 420)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -63,7 +95,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = ExtResource("4_hud")
+script = ExtResource("6_hud")
 
 [node name="HUD" type="Control" parent="CanvasLayer/HUDController"]
 layout_mode = 1
@@ -76,18 +108,18 @@ mouse_filter = 2
 
 [node name="PlayerHPLabel" type="Label" parent="CanvasLayer/HUDController/HUD"]
 layout_mode = 0
-offset_left = 40.0
+offset_left = 60.0
 offset_top = 20.0
-offset_right = 150.0
+offset_right = 170.0
 offset_bottom = 43.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 text = "PLAYER HP"
 
 [node name="PlayerHPBar" type="ProgressBar" parent="CanvasLayer/HUDController/HUD"]
 layout_mode = 0
-offset_left = 40.0
+offset_left = 60.0
 offset_top = 45.0
-offset_right = 340.0
+offset_right = 360.0
 offset_bottom = 65.0
 value = 100.0
 
@@ -96,9 +128,9 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -340.0
+offset_left = -360.0
 offset_top = 20.0
-offset_right = -40.0
+offset_right = -60.0
 offset_bottom = 43.0
 grow_horizontal = 0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -110,9 +142,9 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -340.0
+offset_left = -360.0
 offset_top = 45.0
-offset_right = -40.0
+offset_right = -60.0
 offset_bottom = 65.0
 grow_horizontal = 0
 value = 100.0
@@ -122,9 +154,9 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -250.0
+offset_left = -300.0
 offset_top = 20.0
-offset_right = 250.0
+offset_right = 300.0
 offset_bottom = 50.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
@@ -139,13 +171,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -380.0
+offset_left = -400.0
 offset_top = -45.0
-offset_right = 380.0
+offset_right = 400.0
 offset_bottom = -15.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-text = "Controls: WASD / Arrows (Move 8-dir) | Shift / K (Dash) | Space / J / Left-Click (Attack) | R (Restart)"
+text = "WASD/Arrows (Move) | Shift/K (Dash) | Space/J/Left-Click (Attack) | E (Interact Chest) | R (Restart)"
 horizontal_alignment = 1
