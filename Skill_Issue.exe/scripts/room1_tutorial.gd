@@ -83,8 +83,8 @@ func _apply_director_modifiers() -> void:
 func _spawn_pos(i: int) -> Vector2:
 	var pts = get_node_or_null("SpawnPoints")
 	if pts and pts.get_child_count() > i:
-		return pts.get_child(i).global_position
-	return SPAWN_FALLBACK[i % SPAWN_FALLBACK.size()] + global_position
+		return pts.get_child(i).position
+	return SPAWN_FALLBACK[i % SPAWN_FALLBACK.size()]
 
 func _cycle_prompts() -> void:
 	if not prompt_label:

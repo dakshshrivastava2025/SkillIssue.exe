@@ -23,8 +23,9 @@ const ICE_FRICTION: float  = 0.92   # lower = more slippery
 const ICE_TINT: Color      = Color(0.6, 0.85, 1.0, 0.35)
 
 const SPAWN_FALLBACK: Array[Vector2] = [
-	Vector2(-200, -160), Vector2(200, -160),
-	Vector2(-200, 160),  Vector2(200, 160),
+	Vector2(-240, -100), Vector2(240, -100),
+	Vector2(-200, 80),   Vector2(200, 80),
+	Vector2(0, -80),     Vector2(0, 100),
 ]
 
 func _ready() -> void:
@@ -123,5 +124,5 @@ func _show_warning() -> void:
 func _spawn_pos(i: int) -> Vector2:
 	var pts = get_node_or_null("SpawnPoints")
 	if pts and pts.get_child_count() > i:
-		return pts.get_child(i).global_position
-	return SPAWN_FALLBACK[i % SPAWN_FALLBACK.size()] + global_position
+		return pts.get_child(i).position
+	return SPAWN_FALLBACK[i % SPAWN_FALLBACK.size()]

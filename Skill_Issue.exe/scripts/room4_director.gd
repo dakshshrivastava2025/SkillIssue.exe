@@ -22,8 +22,8 @@ var _wave_spawned: bool     = false   # Prevent double aggressive wave
 var _ice_enabled: bool      = false
 
 const SPAWN_FALLBACK: Array[Vector2] = [
-	Vector2(-200, -160), Vector2(200, -160),
-	Vector2(-200, 160),  Vector2(200, 160),
+	Vector2(-200, -80), Vector2(200, -80),
+	Vector2(-180, 80),  Vector2(180, 80),
 ]
 
 func _ready() -> void:
@@ -176,5 +176,5 @@ func _show_director_message(text: String, duration: float) -> Signal:
 func _spawn_pos(i: int) -> Vector2:
 	var pts = get_node_or_null("SpawnPoints")
 	if pts and pts.get_child_count() > i:
-		return pts.get_child(i).global_position
-	return SPAWN_FALLBACK[i % SPAWN_FALLBACK.size()] + global_position
+		return pts.get_child(i).position
+	return SPAWN_FALLBACK[i % SPAWN_FALLBACK.size()]

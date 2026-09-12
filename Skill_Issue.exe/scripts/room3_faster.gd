@@ -18,8 +18,10 @@ const BASE_COUNT: int      = 4
 const EXTRA_COUNT: int     = 2   # Added if player is aggressive
 
 const SPAWN_FALLBACK: Array[Vector2] = [
-	Vector2(-220, -160), Vector2(0, -160), Vector2(220, -160),
-	Vector2(-220, 160),  Vector2(0, 160),  Vector2(220, 160),
+	Vector2(-200, -100), Vector2(200, -100),
+	Vector2(-220, 60),   Vector2(220, 60),
+	Vector2(-120, -40),  Vector2(120, -40),
+	Vector2(0, -100),
 ]
 
 func _ready() -> void:
@@ -101,5 +103,5 @@ func _show_notice(text: String, duration: float) -> void:
 func _spawn_pos(i: int) -> Vector2:
 	var pts = get_node_or_null("SpawnPoints")
 	if pts and pts.get_child_count() > i:
-		return pts.get_child(i).global_position
-	return SPAWN_FALLBACK[i % SPAWN_FALLBACK.size()] + global_position
+		return pts.get_child(i).position
+	return SPAWN_FALLBACK[i % SPAWN_FALLBACK.size()]
