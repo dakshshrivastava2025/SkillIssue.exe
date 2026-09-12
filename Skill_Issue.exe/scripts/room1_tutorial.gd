@@ -37,6 +37,21 @@ func _ready() -> void:
 func _get_room_bg_path() -> String:
 	return "res://assets/room1_bg.png"
 
+func _get_wall_colliders() -> Array[Rect2]:
+	return [
+		# North wall with central closed door
+		Rect2(-330, -270, 520, 80), # North-Left wall
+		Rect2(330, -270, 520, 80),  # North-Right wall
+		Rect2(0, -295, 160, 60),    # Closed North Door arch
+		# South, West, and East stone walls
+		Rect2(0, 310, 1140, 80),    # South perimeter wall
+		Rect2(-570, 0, 70, 700),    # West perimeter wall
+		Rect2(570, 0, 70, 700),     # East perimeter wall
+		# Corner Props Colliders
+		Rect2(-490, 240, 75, 75),   # Bottom-Left Barrels & Wooden Crate
+		Rect2(485, 255, 60, 45),    # Bottom-Right Iron Treasure Chest
+	]
+
 func _get_zombie_scene() -> PackedScene:
 	var paths = ["res://Scenes/enemies/zombie.tscn", "res://scenes/enemies/Zombie.tscn", "res://Scenes/enemies/Zombie.tscn"]
 	for p in paths:

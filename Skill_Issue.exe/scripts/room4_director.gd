@@ -43,6 +43,22 @@ func _get_theme_floor_color() -> Color:
 func _get_room_bg_path() -> String:
 	return "res://assets/room4_bg.png"
 
+func _get_wall_colliders() -> Array[Rect2]:
+	return [
+		# Outer perimeter walls
+		Rect2(0, -280, 1100, 70),  # Top wall
+		Rect2(0, 310, 1100, 70),   # Bottom wall
+		Rect2(-540, 0, 70, 680),   # Left curved wall
+		Rect2(540, 0, 70, 680),    # Right curved wall
+		# 4 Flame Pillar pedestals
+		Rect2(-270, -110, 70, 80), # Top-Left Pillar
+		Rect2(270, -110, 70, 80),  # Top-Right Pillar
+		Rect2(-270, 190, 70, 80),  # Bottom-Left Pillar
+		Rect2(270, 190, 70, 80),   # Bottom-Right Pillar
+		# Center Pit Grate
+		Rect2(0, 40, 190, 150),    # Center Grate Pit Barrier
+	]
+
 func _physics_process(_delta: float) -> void:
 	if _player_on_ice and _player_ref and _player_ref.has_method("apply_ice_effect"):
 		_player_ref.apply_ice_effect(0.90)   # Slippier than Room 2

@@ -44,6 +44,21 @@ func _get_theme_floor_color() -> Color:
 func _get_room_bg_path() -> String:
 	return "res://assets/room2_bg.png"
 
+func _get_wall_colliders() -> Array[Rect2]:
+	return [
+		# North wall with central doorway arch
+		Rect2(-330, -280, 520, 70), # North-Left wall
+		Rect2(330, -280, 520, 70),  # North-Right wall
+		# South wall with central doorway arch
+		Rect2(-330, 310, 520, 70),  # South-Left wall
+		Rect2(330, 310, 520, 70),   # South-Right wall
+		# West & East walls with archway tunnels
+		Rect2(-560, -180, 60, 240), # West-Top wall
+		Rect2(-560, 180, 60, 240),  # West-Bottom wall
+		Rect2(560, -180, 60, 240),  # East-Top wall
+		Rect2(560, 180, 60, 240),   # East-Bottom wall
+	]
+
 func _physics_process(_delta: float) -> void:
 	if _player_on_ice and _player_ref and _player_ref.has_method("apply_ice_effect"):
 		_player_ref.apply_ice_effect(ICE_FRICTION)

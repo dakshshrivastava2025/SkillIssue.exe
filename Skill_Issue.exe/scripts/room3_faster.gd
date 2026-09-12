@@ -36,6 +36,25 @@ func _get_theme_floor_color() -> Color:
 func _get_room_bg_path() -> String:
 	return "res://assets/room3_bg.png"
 
+func _get_room_foreground_path() -> String:
+	return "res://assets/room3_foreground.png"
+
+func _get_wall_colliders() -> Array[Rect2]:
+	return [
+		# Outer octagon perimeter stone walls
+		Rect2(0, -320, 1200, 60),  # Top wall
+		Rect2(0, 320, 1200, 60),   # Bottom wall
+		Rect2(-590, 0, 60, 720),   # Left wall
+		Rect2(590, 0, 60, 720),    # Right wall
+		# Inner Iron Cage Fence (Pillars & Bars with gate opening in center)
+		Rect2(-240, -180, 240, 30), # Top-Left iron fence
+		Rect2(240, -180, 240, 30),  # Top-Right iron fence
+		Rect2(-360, 0, 30, 280),    # West iron cage bars
+		Rect2(360, 0, 30, 280),     # East iron cage bars
+		Rect2(-220, 190, 220, 30),  # Bottom-Left iron fence
+		Rect2(220, 190, 220, 30),   # Bottom-Right iron fence
+	]
+
 func _get_zombie_scene() -> PackedScene:
 	var paths = ["res://Scenes/enemies/zombie.tscn", "res://scenes/enemies/Zombie.tscn", "res://Scenes/enemies/Zombie.tscn"]
 	for p in paths:

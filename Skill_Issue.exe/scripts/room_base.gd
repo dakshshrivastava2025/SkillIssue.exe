@@ -80,17 +80,13 @@ func _build_environment() -> void:
 			bg_spr.scale = Vector2(1280.0 / float(bg_tex.get_width()), 720.0 / float(bg_tex.get_height()))
 			env.add_child(bg_spr)
 
-	# 3. Perimeter Walls (StaticBody2D colliders)
+	# 3. Perimeter Walls & Custom Obstacle Colliders (StaticBody2D)
 	var static_body = StaticBody2D.new()
 	static_body.name = "DungeonWalls"
+	static_body.collision_layer = 1
+	static_body.collision_mask = 3
 	
-	var wall_rects = [
-		Rect2(0, -350, 1280, 40), # Top wall
-		Rect2(0, 350, 1280, 40),  # Bottom wall
-		Rect2(-630, 0, 40, 720),  # Left wall
-		Rect2(630, 0, 40, 720),   # Right wall
-	]
-	
+	var wall_rects = _get_wall_colliders()
 	for rect in wall_rects:
 		var col = CollisionShape2D.new()
 		var shape = RectangleShape2D.new()
@@ -100,6 +96,19 @@ func _build_environment() -> void:
 		static_body.add_child(col)
 		
 	env.add_child(static_body)
+
+	# 3b. Foreground Layer (Pillars / Fences / Bars player hides behind)
+	var fg_path = _get_room_foreground_path()
+	if fg_path != "" and ResourceLoader.exists(fg_path):
+		var fg_tex = load(fg_path) as Texture2D
+		if fg_tex:
+			var fg_spr = Sprite2D.new()
+			fg_spr.name = "RoomForegroundSprite"
+			fg_spr.texture = fg_tex
+			fg_spr.position = Vector2.ZERO
+			fg_spr.z_index = 20 # Render in front of player and enemies
+			fg_spr.scale = Vector2(1280.0 / float(fg_tex.get_width()), 720.0 / float(fg_tex.get_height()))
+			add_child(fg_spr)
 
 	# 4. Interactive Room Exit Door Trigger (North Door)
 	_build_exit_door(env)
@@ -202,6 +211,19 @@ func _get_theme_floor_color() -> Color:
 
 func _get_room_bg_path() -> String:
 	return "res://assets/room1_bg.png"
+
+func _get_room_foreground_path() -> String:
+	return ""
+
+## Returns array of Rect2 (position, size) defining impassable wall colliders
+func _get_wall_colliders() -> Array[Rect2]:
+	# Default room dimensions matching the 1280x720 background
+	return [
+		Rect2(0, -260, 1140, 100), # North stone wall
+		Rect2(0, 310, 1140, 90),   # South stone wall
+		Rect2(-570, 0, 100, 720),  # West stone wall
+		Rect2(570, 0, 100, 720),   # East stone wall
+	]
 
 # ---------------------------------------------------------------------------
 # Override in subclasses
