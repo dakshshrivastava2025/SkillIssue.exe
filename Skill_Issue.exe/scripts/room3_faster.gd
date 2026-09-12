@@ -77,7 +77,7 @@ func _spawn_enemies() -> void:
 		z.enemy_type = types[randi() % types.size()]
 		z.speed = BASE_SPEED * randf_range(1.0, 1.3)
 		z.speed_multiplier = SPEED_MULT
-		z.global_position = _spawn_pos(i)
+		z.position = _spawn_pos(i)
 		add_child(z)
 		register_enemy(z)
 

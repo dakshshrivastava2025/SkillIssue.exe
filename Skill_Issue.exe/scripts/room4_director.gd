@@ -136,9 +136,10 @@ func _spawn_zombie(pos: Vector2, spd: float = 88.0) -> void:
 	if not ZombieScene:
 		return
 	var z = ZombieScene.instantiate()
+	z.enemy_type = "dark_cultist" if randf() < 0.5 else "dark_wizard"
+	z.is_ranged = true
 	z.speed = spd
-	z.texture_path = "res://assets/dark_cultist.png" if randf() < 0.5 else "res://assets/gargoyle.png"
-	z.global_position = pos
+	z.position = pos
 	add_child(z)
 	register_enemy(z)
 

@@ -47,12 +47,10 @@ func _get_room_bg_path() -> String:
 
 func _get_wall_colliders() -> Array[Rect2]:
 	return [
-		# North wall with central doorway arch
-		Rect2(-330, -280, 520, 70), # North-Left wall
-		Rect2(330, -280, 520, 70),  # North-Right wall
-		# South wall with central doorway arch
-		Rect2(-330, 310, 520, 70),  # South-Left wall
-		Rect2(330, 310, 520, 70),   # South-Right wall
+		# North wall — fully sealed so player cannot walk off the top of the map
+		Rect2(0, -280, 1180, 70),   # North solid perimeter wall
+		# South wall — fully sealed so player cannot walk off the bottom of the map
+		Rect2(0, 310, 1180, 70),    # South solid perimeter wall
 		# West & East walls with archway tunnels
 		Rect2(-560, -180, 60, 240), # West-Top wall
 		Rect2(-560, 180, 60, 240),  # West-Bottom wall
@@ -76,12 +74,12 @@ func _spawn_enemies() -> void:
 	if not ZombieScene:
 		return
 	var count = randi_range(3, 6)
-	var pool = ["res://assets/skeleton.png", "res://assets/goblin_spear.png", "res://assets/skeleton_knight.png"]
+	var types = ["skeleton", "armored_skeleton", "goblin"]
 	for i in range(count):
 		var z = ZombieScene.instantiate()
+		z.enemy_type = types[randi() % types.size()]
 		z.speed = randf_range(65.0, 85.0)
-		z.texture_path = pool[randi() % pool.size()]
-		z.global_position = _spawn_pos(i)
+		z.position = _spawn_pos(i)
 		add_child(z)
 		register_enemy(z)
 

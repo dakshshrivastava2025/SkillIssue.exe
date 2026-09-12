@@ -29,8 +29,8 @@ func _ready() -> void:
 	load_room(0)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed:
-		if event.keycode == KEY_N or event.keycode == KEY_SPACE:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_N:
 			print("[GameManager] Debug: Skipping to next room!")
 			_on_room_completed()
 		elif event.keycode == KEY_K:

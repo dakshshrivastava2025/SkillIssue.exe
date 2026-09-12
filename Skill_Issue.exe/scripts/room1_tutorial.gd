@@ -69,7 +69,7 @@ func _spawn_enemies() -> void:
 		z.enemy_type = "goblin"
 		z.speed = 48.0
 		z.max_health = 20.0
-		z.global_position = _spawn_pos(i)
+		z.position = _spawn_pos(i)
 		add_child(z)
 		register_enemy(z)
 
