@@ -7,8 +7,8 @@ signal player_died()
 
 @export var max_health: int = 100
 @export var speed: float = 240.0
-@export var dash_speed: float = 600.0
-@export var dash_duration: float = 0.18
+@export var dash_speed: float = 650.0
+@export var dash_duration: float = 0.25
 @export var attack_damage: int = 25
 
 var current_health: int = 100
@@ -56,6 +56,7 @@ func _physics_process(delta: float) -> void:
 		velocity = dash_direction * dash_speed
 		if dash_timer <= 0:
 			is_dashing = false
+			invulnerable = false
 		move_and_slide()
 		return
 
@@ -91,8 +92,8 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, speed * 8.0 * delta)
 
-	# Play appropriate animation state if not attacking
-	if not is_attacking:
+	# Play appropriate animation state if not attacking or dashing
+	if not is_attacking and not is_dashing:
 		if is_moving:
 			_play_anim("walk")
 		else:
@@ -135,8 +136,10 @@ func _play_anim(action: String) -> void:
 
 func _start_dash(direction: Vector2) -> void:
 	is_dashing = true
+	invulnerable = true
 	dash_direction = direction
 	dash_timer = dash_duration
+	_play_anim("dash")
 
 func _perform_attack() -> void:
 	is_attacking = true
