@@ -24,28 +24,55 @@ size = Vector2(48, 720)
 size = Vector2(48, 720)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prompt"]
-bg_color = Color(0.12, 0.05, 0.05, 0.9)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(1, 0.25, 0.25, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialogue"]
-bg_color = Color(0.06, 0.06, 0.1, 0.92)
+bg_color = Color(0.12, 0.04, 0.06, 0.92)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.6, 0.2, 0.9, 1)
+border_color = Color(1, 0.3, 0.3, 0.9)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialogue"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill_red"]
+bg_color = Color(0.35, 0.06, 0.06, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.25, 0.25, 0.95)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill_orange"]
+bg_color = Color(0.32, 0.16, 0.03, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.65, 0.1, 0.95)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill_purple"]
+bg_color = Color(0.24, 0.06, 0.3, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.85, 0.35, 1, 0.95)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_death"]
 bg_color = Color(0.08, 0.02, 0.02, 0.9)
@@ -200,15 +227,67 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 text = "DEFEAT THE BOSS"
 horizontal_alignment = 1
 
-[node name="DebuffBadge" type="Label" parent="CanvasLayer/HUDController/HUD"]
+[node name="DebuffContainer" type="HBoxContainer" parent="CanvasLayer/HUDController/HUD"]
 layout_mode = 0
 offset_left = 60.0
-offset_top = 75.0
-offset_right = 360.0
-offset_bottom = 100.0
-theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-text = "DEBUFF: [-30% SPEED]"
+offset_top = 74.0
+offset_right = 450.0
+offset_bottom = 98.0
+theme_override_constants/separation = 8
+
+[node name="DashDebuff" type="PanelContainer" parent="CanvasLayer/HUDController/HUD/DebuffContainer"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill_red")
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/HUDController/HUD/DebuffContainer/DashDebuff"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/HUDController/HUD/DebuffContainer/DashDebuff/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.35, 1)
+theme_override_font_sizes/font_size = 12
+text = "⚡ DASH LOCKED"
+
+[node name="SpeedDebuff" type="PanelContainer" parent="CanvasLayer/HUDController/HUD/DebuffContainer"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill_orange")
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/HUDController/HUD/DebuffContainer/SpeedDebuff"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/HUDController/HUD/DebuffContainer/SpeedDebuff/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.75, 0.2, 1)
+theme_override_font_sizes/font_size = 12
+text = "🔻 -35% SPEED"
+
+[node name="DamageDebuff" type="PanelContainer" parent="CanvasLayer/HUDController/HUD/DebuffContainer"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill_purple")
+
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/HUDController/HUD/DebuffContainer/DamageDebuff"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/HUDController/HUD/DebuffContainer/DamageDebuff/Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.5, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "⚔️ -35% DMG"
 
 [node name="ControlsGuide" type="Label" parent="CanvasLayer/HUDController/HUD"]
 layout_mode = 1
@@ -218,69 +297,77 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -400.0
-offset_top = -45.0
+offset_top = -32.0
 offset_right = 400.0
-offset_bottom = -15.0
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_color = Color(0.75, 0.75, 0.8, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
 text = "WASD/Arrows (Move) | Shift/K (Dash) | Space/J/Left-Click (Attack) | E (Interact Chest) | R (Restart)"
 horizontal_alignment = 1
 
 [node name="AIDirectorPrompt" type="PanelContainer" parent="CanvasLayer/HUDController"]
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -320.0
-offset_top = 65.0
-offset_right = 320.0
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -390.0
+offset_top = 75.0
+offset_right = -60.0
 offset_bottom = 125.0
-grow_horizontal = 2
+grow_horizontal = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_prompt")
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/HUDController/AIDirectorPrompt"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 8
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 6
 
 [node name="PromptText" type="Label" parent="CanvasLayer/HUDController/AIDirectorPrompt/MarginContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.8, 0.4, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 0.85, 0.45, 1)
+theme_override_font_sizes/font_size = 12
 text = "⚡ [AI DIRECTOR INTERVENTION]"
-horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="BossDialogue" type="PanelContainer" parent="CanvasLayer/HUDController"]
 layout_mode = 1
-anchors_preset = 8
+anchors_preset = 7
 anchor_left = 0.5
-anchor_top = 0.5
+anchor_top = 1.0
 anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -340.0
-offset_top = -180.0
-offset_right = 340.0
-offset_bottom = -110.0
+anchor_bottom = 1.0
+offset_left = -420.0
+offset_top = -92.0
+offset_right = 420.0
+offset_bottom = -38.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_dialogue")
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/HUDController/BossDialogue"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 2
 
 [node name="DialogueText" type="RichTextLabel" parent="CanvasLayer/HUDController/BossDialogue/MarginContainer"]
 layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/normal_font_size = 15
+theme_override_font_sizes/bold_font_size = 15
 bbcode_enabled = true
-text = "[b][color=#ff4444]DARK WIZARD:[/color][/b]"
+text = "[center][b][color=#ff5566]DARK WIZARD:[/color][/b] [color=#ffffff]\"Welcome to the arena.\"[/color][/center]"
 fit_content = true
+
 
 [node name="DeathScreen" type="PanelContainer" parent="CanvasLayer/HUDController"]
 layout_mode = 1

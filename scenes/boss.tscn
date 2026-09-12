@@ -15,6 +15,9 @@ size = Vector2(260, 36)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_charged_beam"]
 size = Vector2(2500, 70)
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_melee"]
+radius = 90.0
+
 [node name="Boss" type="CharacterBody2D" groups=["boss"]]
 collision_layer = 4
 collision_mask = 1
@@ -29,6 +32,14 @@ frame = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_boss")
+
+[node name="MeleeArea" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeArea"]
+shape = SubResource("CircleShape2D_melee")
+disabled = true
 
 [node name="ThinBeamArea" type="Area2D" parent="."]
 collision_layer = 16
@@ -63,3 +74,4 @@ texture = ExtResource("4_thick_beam_tex")
 [node name="SFXBeam" type="AudioStreamPlayer2D" parent="."]
 
 [node name="SFXBossHurt" type="AudioStreamPlayer2D" parent="."]
+

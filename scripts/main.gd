@@ -44,9 +44,9 @@ func _setup_room(room_num: int) -> void:
 		
 	# Scale boss difficulty with room number
 	if boss:
-		boss.max_health = 300 + (room_num - 1) * 150
+		boss.max_health = 600 + (room_num - 1) * 200
 		boss.current_health = boss.max_health
-		boss.base_speed = 130.0 + (room_num - 1) * 20.0
+		boss.base_speed = 220.0 + (room_num - 1) * 20.0
 		hud.update_boss_hp(boss.current_health, boss.max_health)
 		
 	if hud and hud.has_node("HUD/StatusLabel"):
@@ -61,8 +61,10 @@ func _on_boss_defeated() -> void:
 func _on_chest_opened() -> void:
 	await get_tree().create_timer(1.2).timeout
 	current_room += 1
+	get_tree().paused = false
 	get_tree().reload_current_scene()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.keycode == KEY_R and event.pressed:
+		get_tree().paused = false
 		get_tree().reload_current_scene()

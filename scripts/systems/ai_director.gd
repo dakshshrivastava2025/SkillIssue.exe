@@ -30,7 +30,7 @@ var is_retreater: bool = false
 # --- 3. Dynamic Gameplay Modifiers ---
 var speed_debuff_active: bool = false       # -35% movement speed
 var damage_debuff_active: bool = false      # -35% attack damage
-var controls_inverted: bool = false         # Inverted controls
+var dash_disabled_active: bool = false      # Dash locked out
 
 # --- 4. LLM Configuration ---
 @export var gemini_api_key: String = ""
@@ -49,8 +49,8 @@ const MOCK_BOSS_LINES = {
 		"Always dodging right? You can't outrun your incompetence."
 	],
 	"retreater": [
-		"You spent 15 seconds running away. Legs weighed down: -35% SPEED!",
-		"Cowards don't get full movement speed in my arena."
+		"You spent 12 seconds running away. DASH SEALED & LEGS WEIGHED DOWN!",
+		"Running away won't save you. Dash disabled: fight me head on!"
 	],
 	"miss_streak": [
 		"5 missed attacks in a row. Attack power suppressed: -35% DAMAGE!",
@@ -70,7 +70,7 @@ func _ready() -> void:
 func reset_session_modifiers() -> void:
 	speed_debuff_active = false
 	damage_debuff_active = false
-	controls_inverted = false
+	dash_disabled_active = false
 	consecutive_misses = 0
 	retreat_timer_streak = 0.0
 	intervention_cooldowns.clear()
@@ -122,10 +122,10 @@ func record_retreat(delta: float) -> void:
 	total_retreat_time += delta
 	retreat_timer_streak += delta
 	
-	if retreat_timer_streak >= 14.0 and not _is_on_cooldown("retreater", 22.0):
+	if retreat_timer_streak >= 12.0 and not _is_on_cooldown("retreater", 20.0):
 		is_retreater = true
 		retreat_timer_streak = 0.0
-		_trigger_intervention("slow_movement", "Chronic Retreating: -35% Movement Speed for 6s!")
+		_trigger_intervention("block_dash", "Chronic Retreating: DASH LOCKED & -35% SPEED for 5s!")
 		request_boss_dialogue("retreater")
 
 func record_damage_taken(amount: float) -> void:
@@ -149,7 +149,7 @@ func get_state_space_vector() -> Dictionary:
 		"active_debuffs": {
 			"speed_debuff": speed_debuff_active,
 			"damage_debuff": damage_debuff_active,
-			"controls_inverted": controls_inverted
+			"dash_disabled": dash_disabled_active
 		}
 	}
 
@@ -163,6 +163,12 @@ func _trigger_intervention(action_type: String, description: String, duration: f
 	director_intervention_triggered.emit(action_type, description)
 	
 	match action_type:
+		"block_dash":
+			dash_disabled_active = true
+			speed_debuff_active = true
+			await get_tree().create_timer(duration).timeout
+			dash_disabled_active = false
+			speed_debuff_active = false
 		"slow_movement":
 			speed_debuff_active = true
 			await get_tree().create_timer(duration).timeout
@@ -171,10 +177,6 @@ func _trigger_intervention(action_type: String, description: String, duration: f
 			damage_debuff_active = true
 			await get_tree().create_timer(duration).timeout
 			damage_debuff_active = false
-		"invert_controls":
-			controls_inverted = true
-			await get_tree().create_timer(duration).timeout
-			controls_inverted = false
 			
 	_evaluate_state_space()
 

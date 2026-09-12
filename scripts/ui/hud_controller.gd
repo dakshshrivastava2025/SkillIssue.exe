@@ -10,7 +10,12 @@ extends Control
 # AI Director On-Screen Prompts & Dialogue
 @onready var prompt_box: PanelContainer = $AIDirectorPrompt
 @onready var prompt_label: Label = $AIDirectorPrompt/MarginContainer/PromptText
-@onready var debuff_badge: Label = $HUD/DebuffBadge
+
+@onready var debuff_container: HBoxContainer = $HUD/DebuffContainer
+@onready var dash_debuff_pill: PanelContainer = $HUD/DebuffContainer/DashDebuff
+@onready var speed_debuff_pill: PanelContainer = $HUD/DebuffContainer/SpeedDebuff
+@onready var damage_debuff_pill: PanelContainer = $HUD/DebuffContainer/DamageDebuff
+
 @onready var dialogue_box: PanelContainer = $BossDialogue
 @onready var dialogue_label: RichTextLabel = $BossDialogue/MarginContainer/DialogueText
 
@@ -20,11 +25,12 @@ extends Control
 
 var prompt_tween: Tween
 var dialogue_tween: Tween
+var boss_target: Node2D = null
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	prompt_box.visible = false
 	dialogue_box.visible = false
-	debuff_badge.visible = false
 	death_screen.visible = false
 	
 	if retry_btn:
@@ -50,50 +56,58 @@ func update_boss_hp(curr: int, max_val: int) -> void:
 
 func _show_death_screen() -> void:
 	death_screen.visible = true
+	get_tree().paused = true
 	if status_label:
 		status_label.text = "YOU HAVE FALLEN"
 
 func _on_retry_pressed() -> void:
+	get_tree().paused = false
 	get_tree().reload_current_scene()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if death_screen.visible and event is InputEventKey and event.keycode == KEY_R and event.pressed:
+		_on_retry_pressed()
 
 func _on_director_intervention(action_name: String, description: String) -> void:
 	prompt_box.visible = true
-	prompt_label.text = "⚡ [AI DIRECTOR INTERVENTION]\n" + description
+	prompt_label.text = "⚡ " + description
 	
-	prompt_box.modulate = Color(2.0, 0.4, 0.4, 1.0)
+	prompt_box.modulate = Color(1.8, 0.4, 0.4, 0.0)
 	
 	if prompt_tween:
 		prompt_tween.kill()
 	prompt_tween = create_tween()
-	prompt_tween.tween_property(prompt_box, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.3)
-	prompt_tween.tween_interval(5.0)
+	# Smooth fade-in
+	prompt_tween.tween_property(prompt_box, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.25)
+	prompt_tween.tween_interval(4.0)
+	# Smooth fade-out
+	prompt_tween.tween_property(prompt_box, "modulate", Color(1.0, 1.0, 1.0, 0.0), 0.35)
 	prompt_tween.tween_callback(func(): prompt_box.visible = false)
 
 func _on_boss_dialogue(text: String, _trigger: String) -> void:
 	dialogue_box.visible = true
-	dialogue_label.text = "[b][color=#ff4444]DARK WIZARD:[/color][/b] " + text
+	dialogue_label.text = "[center][b][color=#ff5566]DARK WIZARD:[/color][/b] [color=#ffffff]\"" + text + "\"[/color][/center]"
+	dialogue_box.modulate = Color(1.0, 1.0, 1.0, 0.0)
 	
 	if dialogue_tween:
 		dialogue_tween.kill()
 	dialogue_tween = create_tween()
-	dialogue_tween.tween_interval(5.0)
+	# Smooth subtitle fade-in
+	dialogue_tween.tween_property(dialogue_box, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.2)
+	dialogue_tween.tween_interval(4.5)
+	# Smooth subtitle fade-out
+	dialogue_tween.tween_property(dialogue_box, "modulate", Color(1.0, 1.0, 1.0, 0.0), 0.3)
 	dialogue_tween.tween_callback(func(): dialogue_box.visible = false)
+
 
 func _on_state_updated(state: Dictionary) -> void:
 	var debuffs = state.get("active_debuffs", {})
-	var active_list = []
-	if debuffs.get("speed_debuff", false):
-		active_list.append("[-45% SPEED]")
-	if debuffs.get("damage_debuff", false):
-		active_list.append("[-50% DAMAGE]")
-	if debuffs.get("controls_inverted", false):
-		active_list.append("[CONTROLS INVERTED]")
-	var dis_dir = debuffs.get("disabled_direction", "")
-	if dis_dir != "":
-		active_list.append("[" + dis_dir.to_upper() + " DISABLED]")
-		
-	if active_list.size() > 0:
-		debuff_badge.text = "ACTIVE DEBUFFS: " + " | ".join(active_list)
-		debuff_badge.visible = true
-	else:
-		debuff_badge.visible = false
+	
+	# Distinct glowing status pill badges
+	if dash_debuff_pill:
+		dash_debuff_pill.visible = debuffs.get("dash_disabled", false)
+	if speed_debuff_pill:
+		speed_debuff_pill.visible = debuffs.get("speed_debuff", false)
+	if damage_debuff_pill:
+		damage_debuff_pill.visible = debuffs.get("damage_debuff", false)
+
