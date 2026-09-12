@@ -1,64 +1,57 @@
-[gd_scene load_steps=9 format=3 uid="uid://mainarena001"]
+[gd_scene load_steps=10 format=3 uid="uid://mainarena001"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" uid="uid://c3qg0kplayer01" path="res://scenes/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" uid="uid://d1w8boss0001" path="res://scenes/boss.tscn" id="3_boss"]
 [ext_resource type="Script" path="res://scripts/ui/hud_controller.gd" id="4_hud"]
+[ext_resource type="Texture2D" path="res://assets/dungeon.png" id="5_dungeon_tex"]
 
-[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_floor"]
-normal = Vector2(0, -1)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_top"]
+size = Vector2(1280, 40)
 
-[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_lwall"]
-normal = Vector2(1, 0)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_bottom"]
+size = Vector2(1280, 40)
 
-[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_rwall"]
-normal = Vector2(-1, 0)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_left"]
+size = Vector2(40, 720)
 
-[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_ceiling"]
-normal = Vector2(0, 1)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_right"]
+size = Vector2(40, 720)
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
 
+[node name="FloorDungeonTiles" type="TextureRect" parent="."]
+z_index = -10
+offset_right = 1280.0
+offset_bottom = 720.0
+texture = ExtResource("5_dungeon_tex")
+stretch_mode = 1
+
 [node name="ArenaBounds" type="StaticBody2D" parent="."]
 collision_mask = 6
 
-[node name="Floor" type="CollisionShape2D" parent="ArenaBounds"]
-position = Vector2(640, 660)
-shape = SubResource("WorldBoundaryShape2D_floor")
+[node name="TopWall" type="CollisionShape2D" parent="ArenaBounds"]
+position = Vector2(640, 20)
+shape = SubResource("RectangleShape2D_wall_top")
+
+[node name="BottomWall" type="CollisionShape2D" parent="ArenaBounds"]
+position = Vector2(640, 700)
+shape = SubResource("RectangleShape2D_wall_bottom")
 
 [node name="LeftWall" type="CollisionShape2D" parent="ArenaBounds"]
-position = Vector2(60, 360)
-shape = SubResource("WorldBoundaryShape2D_lwall")
+position = Vector2(20, 360)
+shape = SubResource("RectangleShape2D_wall_left")
 
 [node name="RightWall" type="CollisionShape2D" parent="ArenaBounds"]
-position = Vector2(1220, 360)
-shape = SubResource("WorldBoundaryShape2D_rwall")
-
-[node name="Ceiling" type="CollisionShape2D" parent="ArenaBounds"]
-position = Vector2(640, 40)
-shape = SubResource("WorldBoundaryShape2D_ceiling")
-
-[node name="ArenaVisualFloor" type="ColorRect" parent="."]
-offset_left = 40.0
-offset_top = 660.0
-offset_right = 1240.0
-offset_bottom = 720.0
-color = Color(0.12, 0.14, 0.18, 1)
-
-[node name="ArenaVisualBack" type="ColorRect" parent="."]
-z_index = -10
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 1280.0
-offset_bottom = 720.0
-color = Color(0.05, 0.05, 0.08, 1)
+position = Vector2(1260, 360)
+shape = SubResource("RectangleShape2D_wall_right")
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
-position = Vector2(300, 600)
+position = Vector2(320, 360)
 
 [node name="Boss" parent="." instance=ExtResource("3_boss")]
-position = Vector2(900, 580)
+position = Vector2(960, 360)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -87,6 +80,7 @@ offset_left = 40.0
 offset_top = 20.0
 offset_right = 150.0
 offset_bottom = 43.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 text = "PLAYER HP"
 
 [node name="PlayerHPBar" type="ProgressBar" parent="CanvasLayer/HUDController/HUD"]
@@ -107,6 +101,7 @@ offset_top = 20.0
 offset_right = -40.0
 offset_bottom = 43.0
 grow_horizontal = 0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 text = "BOSS HP"
 horizontal_alignment = 2
 
@@ -133,6 +128,7 @@ offset_right = 250.0
 offset_bottom = 50.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(1, 0.8, 0.2, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 text = "DEFEAT THE BOSS"
 horizontal_alignment = 1
 
@@ -143,12 +139,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -300.0
-offset_top = -40.0
-offset_right = 300.0
+offset_left = -380.0
+offset_top = -45.0
+offset_right = 380.0
 offset_bottom = -15.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
-text = "Controls: A/D (Move) | Space / W (Jump) | Shift / K (Dash) | J / Left-Click (Attack) | R (Restart)"
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+text = "Controls: WASD / Arrows (Move 8-dir) | Shift / K (Dash) | Space / J / Left-Click (Attack) | R (Restart)"
 horizontal_alignment = 1
