@@ -1,10 +1,17 @@
 extends Area2D
 class_name TreasureChest
 
-signal chest_opened(room_number: int)
+signal chest_opened(reward: Dictionary)
 
 @export var is_locked: bool = true
 var is_open: bool = false
+
+# Pool of progressive rewards from chests
+const REWARDS = [
+	{ "name": "Ancient Greatsword", "ability": "attack_boost", "desc": "+15 Attack Damage" },
+	{ "name": "Heart of Iron", "ability": "health_boost", "desc": "+50 Max Health & Full Heal" },
+	{ "name": "Wind Strider Boots", "ability": "speed_boots", "desc": "+60 Movement Speed" }
+]
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var label: Label = $InteractPrompt
@@ -18,8 +25,8 @@ func _ready() -> void:
 
 func unlock_chest() -> void:
 	is_locked = false
-	modulate = Color(1.2, 1.2, 0.8, 1.0)
-	label.text = "[E] Open Victory Chest & Advance"
+	modulate = Color(1.3, 1.3, 0.8, 1.0)
+	label.text = "[E] Open Victory Chest"
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player") and not is_open:
@@ -27,7 +34,7 @@ func _on_body_entered(body: Node2D) -> void:
 		if is_locked:
 			label.text = "[LOCKED] Defeat the Boss to Open"
 		else:
-			label.text = "[E] Open Victory Chest & Advance"
+			label.text = "[E] Open Victory Chest"
 
 func _on_body_exited(body: Node2D) -> void:
 	if body.is_in_group("player"):
@@ -40,8 +47,15 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func open_chest() -> void:
 	is_open = true
-	sprite.frame = 1 # Open chest frame
-	label.text = "PROCEEDING TO NEXT ROOM..."
+	sprite.frame = 1
+	var reward = REWARDS[randi() % REWARDS.size()]
+	label.text = "OBTAINED: " + reward["name"] + " (" + reward["desc"] + ")!"
+	
 	if sfx_open and sfx_open.stream:
 		sfx_open.play()
-	chest_opened.emit()
+		
+	var player = get_tree().get_first_node_in_group("player")
+	if player and player.has_method("unlock_ability"):
+		player.unlock_ability(reward["ability"])
+		
+	chest_opened.emit(reward)

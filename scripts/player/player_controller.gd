@@ -2,6 +2,7 @@ extends CharacterBody2D
 class_name Player
 
 signal health_changed(current_hp: int, max_hp: int)
+signal ability_unlocked(ability_name: String)
 signal player_died()
 
 @export var max_health: int = 100
@@ -12,14 +13,26 @@ signal player_died()
 
 var current_health: int = 100
 
-# Movement & Combat states
+# Direction & Animation States
+# Row 0: Idle/Walk (Down=0-3, Up=4-7, Right=8-11, Left=12-15)
+enum Direction { DOWN, UP, RIGHT, LEFT }
+var current_dir: Direction = Direction.DOWN
+
 var is_dashing: bool = false
 var is_attacking: bool = false
 var dash_timer: float = 0.0
 var dash_direction: Vector2 = Vector2.DOWN
-var facing_direction: Vector2 = Vector2.DOWN
+var facing_vector: Vector2 = Vector2.DOWN
 var attack_cooldown: float = 0.0
 var invulnerable: bool = false
+
+# Unlocked Abilities from Chests
+var unlocked_abilities = {
+	"dash": true,
+	"fireball": false,
+	"spin_slash": false,
+	"shield": false
+}
 
 # Node references
 @onready var sprite: Sprite2D = $Sprite2D
@@ -34,6 +47,7 @@ func _ready() -> void:
 	health_changed.emit(current_health, max_health)
 	attack_collision.disabled = true
 	attack_sprite.visible = false
+	_update_sprite_direction()
 
 func _physics_process(delta: float) -> void:
 	# Dash state
@@ -45,7 +59,7 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	# 2D Top-Down 4-directional Input Vector
+	# 2D Top-Down 8-directional Input Vector
 	var input_vec = Vector2(
 		Input.get_axis("move_left", "move_right"),
 		Input.get_axis("move_up", "move_down")
@@ -53,42 +67,56 @@ func _physics_process(delta: float) -> void:
 
 	if input_vec != Vector2.ZERO:
 		input_vec = input_vec.normalized()
-		facing_direction = input_vec
+		facing_vector = input_vec
 		
-		# Update sprite frame based on movement direction
-		# Frame 0: Down, Frame 4: Up, Frame 8: Left, Frame 12: Right
-		if abs(input_vec.x) > abs(input_vec.y):
+		# Set accurate direction
+		if abs(input_vec.x) >= abs(input_vec.y):
 			if input_vec.x > 0:
-				sprite.frame = 12 # Right
-				sprite.flip_h = false
+				current_dir = Direction.RIGHT
 			else:
-				sprite.frame = 8  # Left
-				sprite.flip_h = false
+				current_dir = Direction.LEFT
 		else:
 			if input_vec.y > 0:
-				sprite.frame = 0  # Down
+				current_dir = Direction.DOWN
 			else:
-				sprite.frame = 4  # Up
+				current_dir = Direction.UP
+				
+		_update_sprite_direction()
 		
-		# Position attack hitbox in front of facing direction
-		attack_area.position = facing_direction * 40.0
-		attack_area.rotation = facing_direction.angle()
+		# Position attack hitbox precisely in front of facing vector
+		attack_area.position = facing_vector * 42.0
+		attack_area.rotation = facing_vector.angle()
 		
 		velocity = input_vec * speed
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, speed * 8.0 * delta)
 
 	# Dash Trigger
-	if Input.is_action_just_pressed("dash") and not is_dashing:
-		_start_dash(facing_direction if input_vec == Vector2.ZERO else input_vec)
+	if Input.is_action_just_pressed("dash") and not is_dashing and unlocked_abilities["dash"]:
+		_start_dash(facing_vector if input_vec == Vector2.ZERO else input_vec)
 
-	# Attack Trigger
+	# Primary Attack Trigger
 	if attack_cooldown > 0:
 		attack_cooldown -= delta
 	if Input.is_action_just_pressed("attack") and attack_cooldown <= 0 and not is_dashing:
 		_perform_attack()
 
 	move_and_slide()
+
+func _update_sprite_direction() -> void:
+	match current_dir:
+		Direction.DOWN:
+			sprite.frame = 0
+			sprite.flip_h = false
+		Direction.UP:
+			sprite.frame = 4
+			sprite.flip_h = false
+		Direction.RIGHT:
+			sprite.frame = 8
+			sprite.flip_h = false
+		Direction.LEFT:
+			sprite.frame = 12
+			sprite.flip_h = false
 
 func _start_dash(direction: Vector2) -> void:
 	is_dashing = true
@@ -115,6 +143,19 @@ func _perform_attack() -> void:
 			break
 			
 	is_attacking = false
+
+func unlock_ability(ability_name: String) -> void:
+	unlocked_abilities[ability_name] = true
+	match ability_name:
+		"attack_boost":
+			attack_damage += 15
+		"health_boost":
+			max_health += 50
+			current_health = max_health
+			health_changed.emit(current_health, max_health)
+		"speed_boots":
+			speed += 60.0
+	ability_unlocked.emit(ability_name)
 
 func take_damage(amount: int) -> void:
 	if invulnerable:
