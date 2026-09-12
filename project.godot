@@ -6,16 +6,10 @@ config_version=5
 
 [application]
 
-config/name="SkillIssue.exe - The Gaslighting Boss"
-config/description="A psychological 2D boss battle game where the boss adapts to your habits, alters game rules, inverts controls, manipulates UI, and gaslights you in real-time."
+config/name="SkillIssue.exe - Core Boss Battle"
+config/description="Core 2D boss battle proof of concept in Godot 4."
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
-
-[autoload]
-
-TelemetryManager="*res://scripts/systems/telemetry_tracker.gd"
-GaslightManager="*res://scripts/systems/gaslight_manager.gd"
-LLMConnector="*res://scripts/ai/llm_connector.gd"
 
 [display]
 
