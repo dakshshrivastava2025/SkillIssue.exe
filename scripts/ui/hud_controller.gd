@@ -62,6 +62,9 @@ func _show_death_screen() -> void:
 
 func _on_retry_pressed() -> void:
 	get_tree().paused = false
+	var ai = get_node_or_null("/root/AIDirector")
+	if ai:
+		ai.reset_full_session()
 	get_tree().reload_current_scene()
 
 func _unhandled_input(event: InputEvent) -> void:

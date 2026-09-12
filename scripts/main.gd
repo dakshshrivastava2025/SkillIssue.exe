@@ -22,6 +22,11 @@ const ROOM_THEMES = [
 func _ready() -> void:
 	_setup_room(current_room)
 	
+	if current_room == 1:
+		var ai = get_node_or_null("/root/AIDirector")
+		if ai:
+			ai.reset_full_session()
+	
 	if player:
 		player.health_changed.connect(hud.update_player_hp)
 	if boss:
@@ -67,4 +72,8 @@ func _on_chest_opened() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.keycode == KEY_R and event.pressed:
 		get_tree().paused = false
+		current_room = 1
+		var ai = get_node_or_null("/root/AIDirector")
+		if ai:
+			ai.reset_full_session()
 		get_tree().reload_current_scene()

@@ -65,15 +65,32 @@ func _ready() -> void:
 	http_request = HTTPRequest.new()
 	add_child(http_request)
 	http_request.request_completed.connect(_on_request_completed)
-	reset_session_modifiers()
+	reset_full_session()
 
-func reset_session_modifiers() -> void:
+func reset_full_session() -> void:
+	player_kills = 0
+	damage_dealt_total = 0.0
+	damage_taken_total = 0.0
+	damage_taken_recent = 0.0
+	missed_attacks = 0
+	hit_attacks = 0
+	consecutive_misses = 0
+	
+	dodge_counts = {"left": 0, "right": 0, "up": 0, "down": 0}
+	total_retreat_time = 0.0
+	retreat_timer_streak = 0.0
+	dominant_dodge = ""
+	is_retreater = false
+	
 	speed_debuff_active = false
 	damage_debuff_active = false
 	dash_disabled_active = false
-	consecutive_misses = 0
-	retreat_timer_streak = 0.0
 	intervention_cooldowns.clear()
+	
+	_evaluate_state_space()
+
+func reset_session_modifiers() -> void:
+	reset_full_session()
 
 # --- Telemetry Ingestion with Higher Statistical Thresholds ---
 func record_kill() -> void:

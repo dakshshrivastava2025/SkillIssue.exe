@@ -268,6 +268,16 @@ func _check_single_damage_hit(area: Area2D, dmg: int) -> void:
 func _set_state(new_state: State, duration: float) -> void:
 	current_state = new_state
 	state_timer = duration
+	
+	# Strict safety cleanup: guarantee beam visuals/colliders are disabled when not in attack state
+	if new_state != State.ATTACK_THIN:
+		thin_beam_collision.disabled = true
+		thin_beam_sprite.visible = false
+	if new_state != State.ATTACK_MEGA:
+		charged_beam_collision.disabled = true
+		charged_beam_sprite.visible = false
+	if new_state != State.ATTACK_MELEE and melee_collision:
+		melee_collision.disabled = true
 
 func take_damage(amount: int) -> void:
 	current_health = max(0, current_health - amount)
