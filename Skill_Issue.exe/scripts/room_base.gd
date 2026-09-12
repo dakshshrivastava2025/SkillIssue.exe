@@ -57,7 +57,8 @@ func _build_environment() -> void:
 		
 	var env = Node2D.new()
 	env.name = "DungeonEnv"
-	env.z_index = -10
+	env.z_index = -10      # Floor renders at the bottom of all z-layers
+	env.z_as_relative = false  # Absolute z — always behind entities
 	add_child(env)
 
 	# 1. Base floor background color
@@ -97,7 +98,9 @@ func _build_environment() -> void:
 		
 	env.add_child(static_body)
 
-	# 3b. Foreground Layer (Pillars / Fences / Bars player hides behind)
+	# 3b. Foreground Layer (Pillars / Fences / Bars)
+	# z_index = 2: renders ABOVE floor (-10) but BELOW enemies (5) and player (10)
+	# This ensures entities are never hidden by the foreground overlay
 	var fg_path = _get_room_foreground_path()
 	if fg_path != "" and ResourceLoader.exists(fg_path):
 		var fg_tex = load(fg_path) as Texture2D
@@ -106,8 +109,12 @@ func _build_environment() -> void:
 			fg_spr.name = "RoomForegroundSprite"
 			fg_spr.texture = fg_tex
 			fg_spr.position = Vector2.ZERO
-			fg_spr.z_index = 20 # Render in front of player and enemies
-			fg_spr.scale = Vector2(1280.0 / float(fg_tex.get_width()), 720.0 / float(fg_tex.get_height()))
+			# z=2: above floor decorations but BELOW player (z=10) and enemies (z=5)
+			fg_spr.z_index = 2
+			fg_spr.z_as_relative = false # Absolute z so it's not affected by parent
+			# Foreground is exactly 1280x720 (same as bg), no scaling needed
+			if fg_tex.get_width() != 1280 or fg_tex.get_height() != 720:
+				fg_spr.scale = Vector2(1280.0 / float(fg_tex.get_width()), 720.0 / float(fg_tex.get_height()))
 			add_child(fg_spr)
 
 	# 4. Interactive Room Exit Door Trigger (North Door)

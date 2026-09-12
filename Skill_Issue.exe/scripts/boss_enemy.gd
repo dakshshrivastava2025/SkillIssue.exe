@@ -94,6 +94,8 @@ const TRASH_TALK: Dictionary = {
 func _ready() -> void:
 	add_to_group("enemy")
 	health = max_health
+	z_index = 5      # Above floor (-10) and foreground (2), below player (10)
+	z_as_relative = false
 	_target = get_tree().get_first_node_in_group("player")
 
 	if health_bar:

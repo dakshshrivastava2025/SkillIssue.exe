@@ -17,20 +17,22 @@ func _get_room_foreground_path() -> String:
 
 func _get_wall_colliders() -> Array[Rect2]:
 	return [
-		# Outer circular arena walls
-		Rect2(0, -290, 1100, 70),  # Top wall
-		Rect2(0, 310, 1100, 70),   # Bottom wall
-		Rect2(-540, 0, 70, 680),   # Left curved wall
-		Rect2(540, 0, 70, 680),    # Right curved wall
-		# 8 Colosseum Stone Pillars (Player hides behind them; foreground layer renders above player)
-		Rect2(-460, -180, 70, 90), # Top-Left outer
-		Rect2(-240, -230, 70, 90), # Top-Left inner
-		Rect2(240, -230, 70, 90),  # Top-Right inner
-		Rect2(460, -180, 70, 90),  # Top-Right outer
-		Rect2(-460, 180, 70, 90),  # Bottom-Left outer
-		Rect2(-240, 230, 70, 90),  # Bottom-Left inner
-		Rect2(240, 230, 70, 90),   # Bottom-Right inner
-		Rect2(460, 180, 70, 90),   # Bottom-Right outer
+		# === OUTER COLOSSEUM STONE WALLS ===
+		# Top arch wall (narrower — pillars sit at corners)
+		Rect2(0,    -270, 700,  65),  # Top arch centre
+		Rect2(0,     275, 800,  65),  # Bottom wall
+		Rect2(-510,  -20,  65, 530),  # Left outer stone wall (extended to reach bottom)
+		Rect2( 510,  -20,  65, 530),  # Right outer stone wall (extended to reach bottom)
+		# Top-Left corner pillar cluster
+		Rect2(-430, -195, 180,  65),
+		Rect2(-475, -150,  65, 110),
+		# Top-Right corner pillar cluster
+		Rect2( 430, -195, 180,  65),
+		Rect2( 475, -150,  65, 110),
+		# Bottom-Left corner seal (closes the gap between side wall and bottom wall)
+		Rect2(-440,  240, 140,  65),
+		# Bottom-Right corner seal
+		Rect2( 440,  240, 140,  65),
 	]
 
 func _listen_to_boss_death() -> void:

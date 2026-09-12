@@ -31,6 +31,8 @@ const CELL_SIZE: float = 96.0
 func _ready() -> void:
 	health = max_health
 	add_to_group("enemy")
+	z_index = 5      # Above floor (-10) and foreground (2), below player (10)
+	z_as_relative = false
 	_target = get_tree().get_first_node_in_group("player")
 	_resolve_enemy_type()
 	_setup_visuals()

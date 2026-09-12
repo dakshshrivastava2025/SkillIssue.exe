@@ -33,7 +33,8 @@ var _attack_cooldown: float = 0.0
 func _ready() -> void:
 	health = max_health
 	add_to_group("player")
-	z_index = 10
+	z_index = 10          # Top of rendering stack — always visible
+	z_as_relative = false # Absolute z, not affected by parent's z_index
 	queue_redraw()
 
 	# Player only collides with walls (layer 1), not enemy bodies (layer 2)

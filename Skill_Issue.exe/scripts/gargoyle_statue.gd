@@ -27,6 +27,8 @@ func _ready() -> void:
 	health = max_health
 	add_to_group("enemy")
 	add_to_group("statue")
+	z_index = 5      # Above floor (-10) and foreground (2), below player (10)
+	z_as_relative = false
 	_target = get_tree().get_first_node_in_group("player")
 	collision_layer = 2
 	collision_mask = 1
