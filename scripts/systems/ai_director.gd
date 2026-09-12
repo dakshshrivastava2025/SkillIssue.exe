@@ -1,7 +1,7 @@
 extends Node
 class_name AIDirectorNode
 
-## AIDirector: Singleton managing State-Space telemetry, real tangible gameplay interventions,
+## AIDirector: Singleton managing State-Space telemetry, dynamic interventions,
 ## and real-time LLM trash-talk dialogue generation.
 
 signal state_space_updated(state_vector: Dictionary)
@@ -24,46 +24,40 @@ var retreat_timer_streak: float = 0.0
 var current_room: int = 1
 
 # --- 2. Derived State Profile ---
-var dominant_dodge: String = ""       # "left" | "right" | "up" | "down" | ""
+var dominant_dodge: String = ""
 var is_retreater: bool = false
 
-# --- 3. Tangible Gameplay Interventions (Actually affects gameplay) ---
-var speed_debuff_active: bool = false       # Player moves at 55% speed
-var damage_debuff_active: bool = false      # Player attacks deal 50% damage
-var controls_inverted: bool = false         # Inverts horizontal/vertical movement
-var dash_disabled: bool = false             # Completely locks dash
-var disabled_direction: String = ""         # "left" or "right" physically blocks moving that way
+# --- 3. Dynamic Gameplay Modifiers ---
+var speed_debuff_active: bool = false       # -35% movement speed
+var damage_debuff_active: bool = false      # -35% attack damage
+var controls_inverted: bool = false         # Inverted controls
 
 # --- 4. LLM Configuration ---
 @export var gemini_api_key: String = ""
 @export var mock_mode: bool = true
 var http_request: HTTPRequest
 
-# Cooldowns to prevent constant intervention spam
 var intervention_cooldowns: Dictionary = {}
 
 const MOCK_BOSS_LINES = {
 	"dominant_dodge_left": [
-		"Your left dodge is so predictable I disabled it. Good luck.",
-		"Rolling left again? Let me cut your left wheel off."
+		"Your left dodge is so predictable I'm cutting off that flank.",
+		"Rolling left again? Truly inspiring tactical genius."
 	],
 	"dominant_dodge_right": [
-		"Right dodge overused. Right movement disabled. Figure it out.",
-		"Always running right? I just locked your right flank."
+		"Right dodge overused. How painfully predictable.",
+		"Always dodging right? You can't outrun your incompetence."
 	],
 	"retreater": [
-		"You spent 15 seconds running away. Legs weighed down: -45% SPEED!",
+		"You spent 15 seconds running away. Legs weighed down: -35% SPEED!",
 		"Cowards don't get full movement speed in my arena."
 	],
 	"miss_streak": [
-		"5 missed attacks in a row. Your blade is cursed: -50% DAMAGE!",
-		"Are you trying to hit the floor tiles? Damage suppressed."
-	],
-	"invert_controls": [
-		"Feeling too comfortable? Your brain mapping is now inverted."
+		"5 missed attacks in a row. Attack power suppressed: -35% DAMAGE!",
+		"Are you trying to hit the floor tiles? Try aiming."
 	],
 	"boss_intro": [
-		"Welcome to the torture chamber. Every habit you have will be used against you."
+		"Welcome to the arena. Every habit you have will be used against you."
 	]
 }
 
@@ -71,8 +65,17 @@ func _ready() -> void:
 	http_request = HTTPRequest.new()
 	add_child(http_request)
 	http_request.request_completed.connect(_on_request_completed)
+	reset_session_modifiers()
 
-# --- Telemetry Ingestion with Higher & Realistic Learning Thresholds ---
+func reset_session_modifiers() -> void:
+	speed_debuff_active = false
+	damage_debuff_active = false
+	controls_inverted = false
+	consecutive_misses = 0
+	retreat_timer_streak = 0.0
+	intervention_cooldowns.clear()
+
+# --- Telemetry Ingestion with Higher Statistical Thresholds ---
 func record_kill() -> void:
 	player_kills += 1
 	_evaluate_state_space()
@@ -87,9 +90,8 @@ func record_attack_miss() -> void:
 	missed_attacks += 1
 	consecutive_misses += 1
 	
-	# Requires 5 consecutive whiffs before punishing
 	if consecutive_misses >= 5 and not _is_on_cooldown("miss_streak", 16.0):
-		_trigger_intervention("reduce_damage", "5 Misses Streak: Attack power halved (-50% DAMAGE) for 6s!")
+		_trigger_intervention("reduce_damage", "5 Misses Streak: -35% Attack Damage for 5s!")
 		request_boss_dialogue("miss_streak")
 		
 	_evaluate_state_space()
@@ -100,18 +102,18 @@ func record_dodge(direction: String) -> void:
 		
 	var total_dodges = dodge_counts["left"] + dodge_counts["right"] + dodge_counts["up"] + dodge_counts["down"]
 	
-	# Requires at least 8 total dodges and heavy 70%+ bias to establish a genuine habit
-	if total_dodges >= 8:
+	# High threshold (10+ dodges, >= 70% bias) to establish genuine habit
+	if total_dodges >= 10:
 		var left_ratio = float(dodge_counts["left"]) / float(total_dodges)
 		var right_ratio = float(dodge_counts["right"]) / float(total_dodges)
 		
-		if left_ratio >= 0.70 and not _is_on_cooldown("dodge_left", 20.0):
+		if left_ratio >= 0.70 and not _is_on_cooldown("dodge_left", 22.0):
 			dominant_dodge = "left"
-			_trigger_intervention("disable_left", "Dodge Habit Confirmed: LEFT movement physically DISABLED for 5s!")
+			_trigger_intervention("dodge_punish", "Dominant Left-Dodge: Boss pre-firing into left flank!")
 			request_boss_dialogue("dominant_dodge_left")
-		elif right_ratio >= 0.70 and not _is_on_cooldown("dodge_right", 20.0):
+		elif right_ratio >= 0.70 and not _is_on_cooldown("dodge_right", 22.0):
 			dominant_dodge = "right"
-			_trigger_intervention("disable_right", "Dodge Habit Confirmed: RIGHT movement physically DISABLED for 5s!")
+			_trigger_intervention("dodge_punish", "Dominant Right-Dodge: Boss pre-firing into right flank!")
 			request_boss_dialogue("dominant_dodge_right")
 				
 	_evaluate_state_space()
@@ -120,11 +122,10 @@ func record_retreat(delta: float) -> void:
 	total_retreat_time += delta
 	retreat_timer_streak += delta
 	
-	# Requires 12 continuous seconds of turtling/retreating
-	if retreat_timer_streak >= 12.0 and not _is_on_cooldown("retreater", 20.0):
+	if retreat_timer_streak >= 14.0 and not _is_on_cooldown("retreater", 22.0):
 		is_retreater = true
 		retreat_timer_streak = 0.0
-		_trigger_intervention("slow_movement", "Chronic Turtling/Retreat: -45% Movement Speed Debuff for 7s!")
+		_trigger_intervention("slow_movement", "Chronic Retreating: -35% Movement Speed for 6s!")
 		request_boss_dialogue("retreater")
 
 func record_damage_taken(amount: float) -> void:
@@ -148,9 +149,7 @@ func get_state_space_vector() -> Dictionary:
 		"active_debuffs": {
 			"speed_debuff": speed_debuff_active,
 			"damage_debuff": damage_debuff_active,
-			"controls_inverted": controls_inverted,
-			"disabled_direction": disabled_direction,
-			"dash_disabled": dash_disabled
+			"controls_inverted": controls_inverted
 		}
 	}
 
@@ -158,8 +157,8 @@ func _evaluate_state_space() -> void:
 	var state = get_state_space_vector()
 	state_space_updated.emit(state)
 
-# --- Real Tangible Interventions ---
-func _trigger_intervention(action_type: String, description: String, duration: float = 6.0) -> void:
+# --- Interventions ---
+func _trigger_intervention(action_type: String, description: String, duration: float = 5.0) -> void:
 	intervention_cooldowns[action_type] = Time.get_ticks_msec()
 	director_intervention_triggered.emit(action_type, description)
 	
@@ -176,20 +175,6 @@ func _trigger_intervention(action_type: String, description: String, duration: f
 			controls_inverted = true
 			await get_tree().create_timer(duration).timeout
 			controls_inverted = false
-		"disable_left":
-			disabled_direction = "left"
-			await get_tree().create_timer(5.0).timeout
-			if disabled_direction == "left":
-				disabled_direction = ""
-		"disable_right":
-			disabled_direction = "right"
-			await get_tree().create_timer(5.0).timeout
-			if disabled_direction == "right":
-				disabled_direction = ""
-		"disable_dash":
-			dash_disabled = true
-			await get_tree().create_timer(duration).timeout
-			dash_disabled = false
 			
 	_evaluate_state_space()
 

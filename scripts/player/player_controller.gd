@@ -61,40 +61,34 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
-	# Explicit Raw Input reading (strictly reads current keyboard state)
-	var raw_x: float = 0.0
-	var raw_y: float = 0.0
+	# Standard clean 8-directional input reading
+	var input_x: float = 0.0
+	var input_y: float = 0.0
 	
-	if Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT):
-		raw_x -= 1.0
-	if Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT):
-		raw_x += 1.0
-	if Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP):
-		raw_y -= 1.0
-	if Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN):
-		raw_y += 1.0
+	if Input.is_action_pressed("move_left"):
+		input_x -= 1.0
+	if Input.is_action_pressed("move_right"):
+		input_x += 1.0
+	if Input.is_action_pressed("move_up"):
+		input_y -= 1.0
+	if Input.is_action_pressed("move_down"):
+		input_y += 1.0
 	
 	# Tangible AI Action: Invert controls
 	var ai = get_node_or_null("/root/AIDirector")
 	if ai and ai.controls_inverted:
-		raw_x = -raw_x
-		raw_y = -raw_y
+		input_x = -input_x
+		input_y = -input_y
 
-	# Tangible AI Action: Physically disable moving left or right
-	if ai and ai.disabled_direction == "left" and raw_x < 0:
-		raw_x = 0.0
-	elif ai and ai.disabled_direction == "right" and raw_x > 0:
-		raw_x = 0.0
-
-	var input_vec = Vector2(raw_x, raw_y)
-	is_moving = (input_vec.length_squared() > 0.01)
+	var input_vec = Vector2(input_x, input_y)
+	is_moving = (input_vec != Vector2.ZERO)
 
 	# Calculate current active speed (accounting for AI director speed debuff)
 	var current_speed = base_speed
 	if unlocked_abilities["speed_boots"]:
 		current_speed += 60.0
 	if ai and ai.speed_debuff_active:
-		current_speed *= 0.55
+		current_speed *= 0.65 # -35% speed penalty
 
 	if is_moving:
 		input_vec = input_vec.normalized()
@@ -118,9 +112,9 @@ func _physics_process(delta: float) -> void:
 		
 		velocity = input_vec * current_speed
 	else:
-		velocity = Vector2.ZERO # Absolute clean stop, no drifting
+		velocity = Vector2.ZERO # Absolute immediate stop, zero drifting
 
-	# Track retreat habit (moving away from boss/enemies)
+	# Track retreat habit (moving away from boss)
 	var boss = get_tree().get_first_node_in_group("boss")
 	if boss and is_moving and ai:
 		var to_boss = (boss.global_position - global_position).normalized()
@@ -134,17 +128,14 @@ func _physics_process(delta: float) -> void:
 		else:
 			_play_anim("idle")
 
-	# Dash Trigger (check if AI disabled dash)
-	var dash_pressed = Input.is_physical_key_pressed(KEY_SHIFT) or Input.is_physical_key_pressed(KEY_K)
-	if dash_pressed and not is_dashing and unlocked_abilities["dash"]:
-		if not (ai and ai.dash_disabled):
-			_start_dash(facing_vector if input_vec == Vector2.ZERO else input_vec)
+	# Dash Trigger
+	if Input.is_action_just_pressed("dash") and not is_dashing and unlocked_abilities["dash"]:
+		_start_dash(facing_vector if input_vec == Vector2.ZERO else input_vec)
 
 	# Primary Attack Trigger
 	if attack_cooldown > 0:
 		attack_cooldown -= delta
-	var attack_pressed = Input.is_physical_key_pressed(KEY_J) or Input.is_physical_key_pressed(KEY_SPACE) or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
-	if attack_pressed and attack_cooldown <= 0 and not is_dashing:
+	if Input.is_action_just_pressed("attack") and attack_cooldown <= 0 and not is_dashing:
 		_perform_attack()
 
 	move_and_slide()
@@ -208,7 +199,7 @@ func _perform_attack() -> void:
 		
 	var ai = get_node_or_null("/root/AIDirector")
 	if ai and ai.damage_debuff_active:
-		damage = int(damage * 0.5) # Tangible -50% Damage Penalty
+		damage = int(damage * 0.65) # -35% Damage Penalty
 		
 	var overlapping_bodies = attack_area.get_overlapping_bodies()
 	var hit_enemy = false
