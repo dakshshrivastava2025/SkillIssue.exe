@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://mainarena001"]
+[gd_scene load_steps=15 format=3 uid="uid://mainarena001"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Texture2D" path="res://assets/Grass-01.png" id="2_floor_tex"]
@@ -22,6 +22,42 @@ size = Vector2(48, 720)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_right"]
 size = Vector2(48, 720)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_prompt"]
+bg_color = Color(0.12, 0.05, 0.05, 0.9)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.25, 0.25, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialogue"]
+bg_color = Color(0.06, 0.06, 0.1, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.2, 0.9, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_death"]
+bg_color = Color(0.08, 0.02, 0.02, 0.9)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.8, 0.1, 0.1, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -164,6 +200,16 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 text = "DEFEAT THE BOSS"
 horizontal_alignment = 1
 
+[node name="DebuffBadge" type="Label" parent="CanvasLayer/HUDController/HUD"]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 75.0
+offset_right = 360.0
+offset_bottom = 100.0
+theme_override_colors/font_color = Color(1, 0.3, 0.3, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+text = "DEBUFF: [-30% SPEED]"
+
 [node name="ControlsGuide" type="Label" parent="CanvasLayer/HUDController/HUD"]
 layout_mode = 1
 anchors_preset = 7
@@ -181,3 +227,96 @@ theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 text = "WASD/Arrows (Move) | Shift/K (Dash) | Space/J/Left-Click (Attack) | E (Interact Chest) | R (Restart)"
 horizontal_alignment = 1
+
+[node name="AIDirectorPrompt" type="PanelContainer" parent="CanvasLayer/HUDController"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -320.0
+offset_top = 65.0
+offset_right = 320.0
+offset_bottom = 125.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_prompt")
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/HUDController/AIDirectorPrompt"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 8
+
+[node name="PromptText" type="Label" parent="CanvasLayer/HUDController/AIDirectorPrompt/MarginContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.4, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+text = "⚡ [AI DIRECTOR INTERVENTION]"
+horizontal_alignment = 1
+
+[node name="BossDialogue" type="PanelContainer" parent="CanvasLayer/HUDController"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -340.0
+offset_top = -180.0
+offset_right = 340.0
+offset_bottom = -110.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_dialogue")
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/HUDController/BossDialogue"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 10
+
+[node name="DialogueText" type="RichTextLabel" parent="CanvasLayer/HUDController/BossDialogue/MarginContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "[b][color=#ff4444]DARK WIZARD:[/color][/b]"
+fit_content = true
+
+[node name="DeathScreen" type="PanelContainer" parent="CanvasLayer/HUDController"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -260.0
+offset_top = -150.0
+offset_right = 260.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_death")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/HUDController/DeathScreen"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Title" type="Label" parent="CanvasLayer/HUDController/DeathScreen/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 32
+text = "YOU DIED"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CanvasLayer/HUDController/DeathScreen/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+text = "The dungeon learned your habits and exploited them."
+horizontal_alignment = 1
+
+[node name="RetryButton" type="Button" parent="CanvasLayer/HUDController/DeathScreen/VBoxContainer"]
+custom_minimum_size = Vector2(180, 45)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "RETRY (Press R)"
