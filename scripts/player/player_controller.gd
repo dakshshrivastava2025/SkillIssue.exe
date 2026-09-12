@@ -13,11 +13,7 @@ signal player_died()
 
 var current_health: int = 100
 
-# Direction & Animation States
-# Down: Frames 0..3 (Idle: 0..2, Walk: 0..3)
-# Up: Frames 4..7 (Idle: 4, Walk: 4..7)
-# Right: Frames 8..11 (Idle: 8, Walk: 8..11)
-# Left: Frames 8..11 (Mirrored flip_h)
+# Direction & Animation
 enum Direction { DOWN, UP, RIGHT, LEFT }
 var current_dir: Direction = Direction.DOWN
 
@@ -30,12 +26,6 @@ var facing_vector: Vector2 = Vector2.DOWN
 var attack_cooldown: float = 0.0
 var invulnerable: bool = false
 
-# Custom animation frame cycle timer
-var anim_timer: float = 0.0
-var anim_frame_idx: int = 0
-const WALK_FRAME_SPEED: float = 0.14
-const IDLE_FRAME_SPEED: float = 0.28
-
 # Unlocked Abilities from Chests
 var unlocked_abilities = {
 	"dash": true,
@@ -45,7 +35,7 @@ var unlocked_abilities = {
 }
 
 # Node references
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var anim_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var attack_area: Area2D = $AttackArea
 @onready var attack_collision: CollisionShape2D = $AttackArea/CollisionShape2D
 @onready var attack_sprite: Sprite2D = $AttackArea/AttackSprite
@@ -57,7 +47,7 @@ func _ready() -> void:
 	health_changed.emit(current_health, max_health)
 	attack_collision.disabled = true
 	attack_sprite.visible = false
-	_update_animation_frame()
+	_play_anim("idle")
 
 func _physics_process(delta: float) -> void:
 	# Dash state
@@ -101,8 +91,12 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, speed * 8.0 * delta)
 
-	# Handle smooth walking and breathing idle animation cycles
-	_process_animation(delta)
+	# Play appropriate animation state if not attacking
+	if not is_attacking:
+		if is_moving:
+			_play_anim("walk")
+		else:
+			_play_anim("idle")
 
 	# Dash Trigger
 	if Input.is_action_just_pressed("dash") and not is_dashing and unlocked_abilities["dash"]:
@@ -116,42 +110,28 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-func _process_animation(delta: float) -> void:
-	anim_timer += delta
-	var current_speed_threshold = WALK_FRAME_SPEED if is_moving else IDLE_FRAME_SPEED
-	
-	if anim_timer >= current_speed_threshold:
-		anim_timer = 0.0
-		anim_frame_idx += 1
-		_update_animation_frame()
-
-func _update_animation_frame() -> void:
-	var base_frame = 0
+func _play_anim(action: String) -> void:
+	var dir_suffix = "down"
 	var flip = false
 	
 	match current_dir:
 		Direction.DOWN:
-			base_frame = 0
+			dir_suffix = "down"
 			flip = false
 		Direction.UP:
-			base_frame = 4
+			dir_suffix = "up"
 			flip = false
 		Direction.RIGHT:
-			base_frame = 8
+			dir_suffix = "right"
 			flip = false
 		Direction.LEFT:
-			base_frame = 8
+			dir_suffix = "right"
 			flip = true
 			
-	sprite.flip_h = flip
-	
-	if is_moving:
-		# 4-frame walk cycle [base_frame + 0..3]
-		sprite.frame = base_frame + (anim_frame_idx % 4)
-	else:
-		# 3-frame breathing idle cycle [base_frame + 0..2]
-		# (e.g., frames 0, 1, 2 for down-facing idle)
-		sprite.frame = base_frame + (anim_frame_idx % 3)
+	anim_sprite.flip_h = flip
+	var anim_name = action + "_" + dir_suffix
+	if anim_sprite.animation != anim_name or not anim_sprite.is_playing():
+		anim_sprite.play(anim_name)
 
 func _start_dash(direction: Vector2) -> void:
 	is_dashing = true
@@ -160,14 +140,16 @@ func _start_dash(direction: Vector2) -> void:
 
 func _perform_attack() -> void:
 	is_attacking = true
-	attack_cooldown = 0.28
+	attack_cooldown = 0.32
 	attack_collision.disabled = false
 	attack_sprite.visible = true
+	
+	_play_anim("attack")
 	
 	if sfx_attack and sfx_attack.stream:
 		sfx_attack.play()
 	
-	await get_tree().create_timer(0.12).timeout
+	await get_tree().create_timer(0.18).timeout
 	attack_collision.disabled = true
 	attack_sprite.visible = false
 	
@@ -208,7 +190,7 @@ func take_damage(amount: int) -> void:
 
 func _flash_hit() -> void:
 	invulnerable = true
-	sprite.modulate = Color(2.0, 0.2, 0.2, 1.0)
+	anim_sprite.modulate = Color(2.0, 0.2, 0.2, 1.0)
 	await get_tree().create_timer(0.2).timeout
-	sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	anim_sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	invulnerable = false
