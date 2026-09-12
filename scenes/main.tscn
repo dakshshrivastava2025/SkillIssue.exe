@@ -1,0 +1,239 @@
+[gd_scene load_steps=12 format=3 uid="uid://mainarena001"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="PackedScene" uid="uid://c3qg0kplayer01" path="res://scenes/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://d1w8boss0001" path="res://scenes/boss.tscn" id="3_boss"]
+[ext_resource type="Script" path="res://scripts/ui/hud_controller.gd" id="4_hud"]
+[ext_resource type="Shader" path="res://assets/shaders/screen_glitch.gdshader" id="5_shader"]
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_floor"]
+normal = Vector2(0, -1)
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_lwall"]
+normal = Vector2(1, 0)
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_rwall"]
+normal = Vector2(-1, 0)
+
+[sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_ceiling"]
+normal = Vector2(0, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_glitch"]
+shader = ExtResource("5_shader")
+shader_parameter/glitch_intensity = 0.0
+shader_parameter/chromatic_aberration = 0.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_box"]
+bg_color = Color(0.08, 0.08, 0.12, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.8, 0.2, 0.2, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="ArenaBounds" type="StaticBody2D" parent="."]
+collision_mask = 6
+
+[node name="Floor" type="CollisionShape2D" parent="ArenaBounds"]
+position = Vector2(640, 660)
+shape = SubResource("WorldBoundaryShape2D_floor")
+
+[node name="LeftWall" type="CollisionShape2D" parent="ArenaBounds"]
+position = Vector2(60, 360)
+shape = SubResource("WorldBoundaryShape2D_lwall")
+
+[node name="RightWall" type="CollisionShape2D" parent="ArenaBounds"]
+position = Vector2(1220, 360)
+shape = SubResource("WorldBoundaryShape2D_rwall")
+
+[node name="Ceiling" type="CollisionShape2D" parent="ArenaBounds"]
+position = Vector2(640, 40)
+shape = SubResource("WorldBoundaryShape2D_ceiling")
+
+[node name="ArenaVisualFloor" type="ColorRect" parent="."]
+offset_left = 40.0
+offset_top = 660.0
+offset_right = 1240.0
+offset_bottom = 720.0
+color = Color(0.12, 0.14, 0.18, 1)
+
+[node name="ArenaVisualBack" type="ColorRect" parent="."]
+z_index = -10
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.05, 0.05, 0.08, 1)
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(300, 600)
+
+[node name="Boss" parent="." instance=ExtResource("3_boss")]
+position = Vector2(900, 580)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="HUDController" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_hud")
+
+[node name="HUD" type="Control" parent="CanvasLayer/HUDController"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PlayerHPLabel" type="Label" parent="CanvasLayer/HUDController/HUD"]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 20.0
+offset_right = 150.0
+offset_bottom = 43.0
+text = "PLAYER HP"
+
+[node name="PlayerHPBar" type="ProgressBar" parent="CanvasLayer/HUDController/HUD"]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 45.0
+offset_right = 340.0
+offset_bottom = 65.0
+value = 100.0
+
+[node name="BossHPLabel" type="Label" parent="CanvasLayer/HUDController/HUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -340.0
+offset_top = 20.0
+offset_right = -40.0
+offset_bottom = 43.0
+grow_horizontal = 0
+text = "G.A.B. CORE INTEGRITY"
+horizontal_alignment = 2
+
+[node name="BossHPBar" type="ProgressBar" parent="CanvasLayer/HUDController/HUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -340.0
+offset_top = 45.0
+offset_right = -40.0
+offset_bottom = 65.0
+grow_horizontal = 0
+value = 100.0
+
+[node name="EventNotification" type="Label" parent="CanvasLayer/HUDController/HUD"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 20.0
+offset_right = 250.0
+offset_bottom = 50.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.2, 0.2, 1)
+text = "[!] BOSS ALTERED GAME ENGINE RULES"
+horizontal_alignment = 1
+
+[node name="ControlsGuide" type="Label" parent="CanvasLayer/HUDController/HUD"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -40.0
+offset_right = 300.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
+text = "Controls: A/D (Move) | Space / W (Jump) | Shift / K (Dash) | J / Left-Click (Attack)"
+horizontal_alignment = 1
+
+[node name="DialogueBox" type="PanelContainer" parent="CanvasLayer/HUDController"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -220.0
+offset_right = 320.0
+offset_bottom = -140.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_box")
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/HUDController/DialogueBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/HUDController/DialogueBox/MarginContainer"]
+layout_mode = 2
+
+[node name="DialogueLabel" type="RichTextLabel" parent="CanvasLayer/HUDController/DialogueBox/MarginContainer/VBoxContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "[b][color=#ff4444]G.A.B:[/color][/b] Analyzing pathetic human performance..."
+fit_content = true
+
+[node name="FakePopup" type="Window" parent="CanvasLayer/HUDController"]
+title = "FATAL EXCEPTION - SkillIssue.exe"
+position = Vector2i(440, 260)
+size = Vector2i(400, 150)
+visible = false
+unresizable = true
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/HUDController/FakePopup"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/HUDController/FakePopup/MarginContainer"]
+layout_mode = 2
+
+[node name="ErrorLabel" type="Label" parent="CanvasLayer/HUDController/FakePopup/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Unhandled Skill Deficiency detected in Player process."
+autowrap_mode = 2
+
+[node name="GlitchOverlay" type="ColorRect" parent="CanvasLayer/HUDController"]
+material = SubResource("ShaderMaterial_glitch")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

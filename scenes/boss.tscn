@@ -1,0 +1,37 @@
+[gd_scene load_steps=5 format=3 uid="uid://d1w8boss0001"]
+
+[ext_resource type="Script" path="res://scripts/boss/boss_controller.gd" id="1_boss_script"]
+[ext_resource type="Texture2D" path="res://assets/wizard_boss/boss-cloak.png" id="2_boss_tex"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_boss"]
+radius = 24.0
+height = 64.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_beam"]
+size = Vector2(180, 48)
+
+[node name="Boss" type="CharacterBody2D" groups=["boss"]]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_boss_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_boss_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_boss")
+
+[node name="BeamArea" type="Area2D" parent="."]
+position = Vector2(-90, 0)
+collision_layer = 16
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BeamArea"]
+shape = SubResource("RectangleShape2D_beam")
+disabled = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[node name="SFXBeam" type="AudioStreamPlayer2D" parent="."]
+
+[node name="SFXBossHurt" type="AudioStreamPlayer2D" parent="."]
