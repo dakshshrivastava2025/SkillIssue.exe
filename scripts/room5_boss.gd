@@ -20,6 +20,10 @@ func _get_player_spawn_position() -> Vector2:
 func _should_have_archway_tunnels() -> bool:
 	return false
 
+## Remove corner statues in boss battle
+func _should_have_statues() -> bool:
+	return false
+
 func _get_wall_colliders() -> Array[Rect2]:
 	return [
 		# === OUTER COLOSSEUM STONE WALLS ===

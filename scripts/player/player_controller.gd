@@ -187,7 +187,8 @@ func _physics_process(delta: float) -> void:
 			attack_area.rotation = facing_vector.angle()
 		
 		if _is_on_ice:
-			_ice_drift = _ice_drift.lerp(input_vec * speed, 0.08)
+			# Ice drifting: wide turning arcs and frictionless gliding
+			_ice_drift = _ice_drift.lerp(input_vec * speed * 1.12, 0.035)
 			velocity = _ice_drift
 			_is_on_ice = false
 		else:
@@ -195,7 +196,8 @@ func _physics_process(delta: float) -> void:
 			velocity = input_vec * speed
 	else:
 		if _is_on_ice:
-			_ice_drift = _ice_drift.lerp(Vector2.ZERO, 0.05)
+			# Ice slide: prolonged drift when releasing input
+			_ice_drift = _ice_drift.lerp(Vector2.ZERO, 0.015)
 			velocity = _ice_drift
 			_is_on_ice = false
 		else:

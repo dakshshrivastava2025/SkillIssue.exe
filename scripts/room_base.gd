@@ -304,7 +304,12 @@ func _on_door_entered(body: Node) -> void:
 			if _locked_sfx and is_instance_valid(_locked_sfx):
 				_locked_sfx.play()
 
+func _should_have_statues() -> bool:
+	return true
+
 func _spawn_statues(env: Node2D) -> void:
+	if not _should_have_statues():
+		return
 	var statue_script = load("res://scripts/gargoyle_statue.gd")
 	if not statue_script:
 		return
@@ -323,6 +328,8 @@ func _spawn_statues(env: Node2D) -> void:
 		env.add_child(statue)
 
 func _start_room_timer() -> void:
+	if not _should_have_statues():
+		return
 	await get_tree().create_timer(16.0).timeout
 	if _room_active and not _is_cleared and not _enemies.is_empty():
 		print("[RoomBase] ⚠️ TIME IS UP! Gargoyle statues awaken as punishment!")

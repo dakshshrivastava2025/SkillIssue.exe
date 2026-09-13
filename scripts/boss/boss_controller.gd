@@ -5,10 +5,10 @@ signal boss_health_changed(current_hp: int, max_hp: int)
 signal boss_defeated()
 signal died()
 
-@export var max_health: int = 700
+@export var max_health: int = 500
 @export var base_speed: float = 220.0
 
-var current_health: int = 700
+var current_health: int = 500
 var player_target: CharacterBody2D = null
 
 enum State { CHASE, TELEGRAPH_THIN, ATTACK_THIN, CHARGE_MEGA, ATTACK_MEGA, TELEGRAPH_MELEE, ATTACK_MELEE, DODGE_ROLL, RETREAT }

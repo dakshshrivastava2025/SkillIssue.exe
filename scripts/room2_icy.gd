@@ -19,7 +19,7 @@ var _player_on_ice: bool  = false
 var _player_ref: CharacterBody2D = null
 # Ice drift carries previous velocity
 var _ice_velocity: Vector2 = Vector2.ZERO
-const ICE_FRICTION: float  = 0.92   # lower = more slippery
+const ICE_FRICTION: float  = 0.985   # very low friction = super icy
 const ICE_TINT: Color      = Color(0.6, 0.85, 1.0, 0.35)
 
 const SPAWN_FALLBACK: Array[Vector2] = [
@@ -45,8 +45,11 @@ func _get_room_bg_path() -> String:
 	return "res://assets/room2_bg.png"
 
 func _physics_process(_delta: float) -> void:
-	if _player_on_ice and _player_ref and _player_ref.has_method("apply_ice_effect"):
-		_player_ref.apply_ice_effect(ICE_FRICTION)
+	if not _player_ref or not is_instance_valid(_player_ref):
+		_player_ref = get_tree().get_first_node_in_group("player")
+	if _player_ref and is_instance_valid(_player_ref) and _player_ref.has_method("apply_ice_effect"):
+		if _player_on_ice or ice_zone == null:
+			_player_ref.apply_ice_effect(ICE_FRICTION)
 
 func _get_zombie_scene() -> PackedScene:
 	var paths = ["res://scenes/enemies/zombie.tscn", "res://Scenes/enemies/zombie.tscn"]
@@ -72,17 +75,18 @@ func _spawn_enemies() -> void:
 func _apply_director_modifiers() -> void:
 	pass  # Room 2: scripted difficulty only, no Director yet
 
+func _should_have_archway_tunnels() -> bool:
+	return false
+
 func _get_wall_colliders() -> Array[Rect2]:
 	return [
 		# North wall — fully sealed so player cannot walk off the top of the map
 		Rect2(0, -280, 1180, 70),   # North solid perimeter wall
 		# South wall — fully sealed so player cannot walk off the bottom of the map
 		Rect2(0, 310, 1180, 70),    # South solid perimeter wall
-		# West & East walls with archway tunnels
-		Rect2(-560, -180, 60, 240), # West-Top wall
-		Rect2(-560, 180, 60, 240),  # West-Bottom wall
-		Rect2(560, -180, 60, 240),  # East-Top wall
-		Rect2(560, 180, 60, 240),   # East-Bottom wall
+		# Solid continuous West & East barrier walls (seals off abyss on both edges)
+		Rect2(-560, 0, 70, 640),    # West solid edge barrier
+		Rect2(560, 0, 70, 640),     # East solid edge barrier
 	]
 
 # ---------------------------------------------------------------------------

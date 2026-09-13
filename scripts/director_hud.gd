@@ -251,7 +251,7 @@ func _build_boss_health_hud() -> void:
 	# Boss HP Text
 	_boss_hp_label = Label.new()
 	_boss_hp_label.name = "BossHPLabel"
-	_boss_hp_label.text = "DARK WIZARD: 700 / 700 HP"
+	_boss_hp_label.text = "DARK WIZARD: 500 / 500 HP"
 	_boss_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_boss_hp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_boss_hp_label.size = Vector2(BAR_WIDTH + 4, BAR_HEIGHT + 4)
