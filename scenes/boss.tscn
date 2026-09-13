@@ -74,4 +74,3 @@ texture = ExtResource("4_thick_beam_tex")
 [node name="SFXBeam" type="AudioStreamPlayer2D" parent="."]
 
 [node name="SFXBossHurt" type="AudioStreamPlayer2D" parent="."]
-

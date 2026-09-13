@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://c3yr64gpqd75i"
+
+[deps]
+
+files=["res://assets/youtube_playlist_export.Duration (Seconds).translation"]
+
+source_file="res://assets/youtube_playlist_export.csv"
+dest_files=["res://assets/youtube_playlist_export.Duration (Seconds).translation"]
+
+[params]
+
+compress=true
+delimiter=0
+unescape_keys=false
+unescape_translations=true

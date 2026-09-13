@@ -74,9 +74,14 @@ func _show_death_screen() -> void:
 func _on_retry_pressed() -> void:
 	get_tree().paused = false
 	var ai = get_node_or_null("/root/AIDirector")
-	if ai:
+	if ai and ai.has_method("reset_full_session"):
 		ai.reset_full_session()
-	get_tree().reload_current_scene()
+	var gm = get_node_or_null("/root/Main/GameManager")
+	if gm and gm.has_method("load_room"):
+		death_screen.visible = false
+		gm.load_room(0)
+	else:
+		get_tree().reload_current_scene()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if death_screen.visible and event is InputEventKey and event.keycode == KEY_R and event.pressed:

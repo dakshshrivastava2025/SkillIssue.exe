@@ -3,6 +3,7 @@ class_name BossController
 
 signal boss_health_changed(current_hp: int, max_hp: int)
 signal boss_defeated()
+signal died()
 
 @export var max_health: int = 700
 @export var base_speed: float = 220.0
@@ -296,5 +297,6 @@ func take_damage(amount: int) -> void:
 	
 	if current_health <= 0:
 		boss_defeated.emit()
+		died.emit()
 		queue_free()
 
