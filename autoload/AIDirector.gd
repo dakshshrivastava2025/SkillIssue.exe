@@ -174,12 +174,9 @@ func record_damage_taken(amount: float) -> void:
 func reset_full_session() -> void:
 	reset()
 
-func reset_all_data() -> void:
-	reset()
-
 func reset() -> void:
-	kills = 0
 	current_room = 1
+	kills = 0
 	damage_dealt_total = 0.0
 	damage_taken_total = 0.0
 	damage_taken_recent = 0.0
@@ -353,4 +350,3 @@ func get_profile_summary() -> String:
 		kills, retreat_time, dominant_dodge if dominant_dodge != "" else "none",
 		str(is_aggressive), str(is_retreater), str(attack_is_rhythmic)
 	]
-

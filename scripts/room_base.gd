@@ -252,8 +252,8 @@ func _build_exit_door(env: Node2D) -> void:
 	var half_path = _get_door_half_open_path()
 	var open_path = _get_door_fully_open_path()
 	var has_overlay = (intact_path != "" and ResourceLoader.exists(intact_path)) or \
-	                  (half_path != "" and ResourceLoader.exists(half_path)) or \
-	                  (open_path != "" and ResourceLoader.exists(open_path))
+					  (half_path != "" and ResourceLoader.exists(half_path)) or \
+					  (open_path != "" and ResourceLoader.exists(open_path))
 
 	if has_overlay:
 		_door_overlay = Node2D.new()
@@ -556,4 +556,3 @@ func _build_treasure_chest(env: Node2D) -> void:
 		chest.is_locked = true
 	env.add_child(chest)
 	_room_chest = chest
-
