@@ -1,0 +1,244 @@
+[gd_scene load_steps=7 format=3 uid="uid://c7title0001screen"]
+
+[ext_resource type="Script" path="res://scripts/ui/title_screen.gd" id="1_title_script"]
+[ext_resource type="Texture2D" path="res://assets/title_screen/title.png" id="2_title_tex"]
+[ext_resource type="AudioStream" path="res://assets/title_screen/waves.mp3" id="3_waves_sfx"]
+[ext_resource type="AudioStream" path="res://assets/title_screen/menu_focus.wav" id="4_focus_sfx"]
+[ext_resource type="AudioStream" path="res://assets/title_screen/menu_select.wav" id="5_select_sfx"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
+bg_color = Color(0.12, 0.08, 0.16, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.65, 0.45, 0.85, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+expand_margin_left = 6.0
+expand_margin_top = 4.0
+expand_margin_right = 6.0
+expand_margin_bottom = 4.0
+
+[node name="TitleScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_title_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.04, 0.09, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="TitleBanner" type="TextureRect" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(768, 192)
+layout_mode = 2
+texture = ExtResource("2_title_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Subtitle" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.75, 1, 0.9)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 14
+text = "⚔️  AN ADAPTIVE AI ROGUELIKE DUNGEON CRAWLER  ⚔️"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+
+[node name="Buttons" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 14
+
+[node name="BtnStart" type="Button" parent="CenterContainer/VBoxContainer/Buttons"]
+custom_minimum_size = Vector2(280, 44)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+text = "ENTER THE DUNGEON"
+
+[node name="BtnGuide" type="Button" parent="CenterContainer/VBoxContainer/Buttons"]
+custom_minimum_size = Vector2(280, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+text = "HOW TO PLAY"
+
+[node name="BtnQuit" type="Button" parent="CenterContainer/VBoxContainer/Buttons"]
+custom_minimum_size = Vector2(280, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.5, 0.5, 1)
+theme_override_colors/font_hover_color = Color(1, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+text = "QUIT"
+
+[node name="Footer" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -36.0
+offset_right = 300.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.5, 0.45, 0.6, 0.8)
+theme_override_font_sizes/font_size = 12
+text = "Powered by Real-Time Habit Tracking AI Director | Hackathon Build"
+horizontal_alignment = 1
+
+[node name="GuideModal" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="GuideModal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.75)
+
+[node name="Panel" type="Panel" parent="GuideModal"]
+custom_minimum_size = Vector2(620, 460)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -310.0
+offset_top = -230.0
+offset_right = 310.0
+offset_bottom = 230.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="GuideModal/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = 24.0
+offset_right = -28.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="GuideModal/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 20
+text = "HOW TO PLAY & DUNGEON RULES"
+horizontal_alignment = 1
+
+[node name="InfoText" type="RichTextLabel" parent="GuideModal/Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[color=#66d9ef][b]🕹️ CONTROLS[/b][/color]
+• [b]WASD / Arrows[/b] — Move
+• [b]Shift / K / C[/b] — Dash / Dodge (Invulnerability frames)
+• [b]Left Click / Space / J[/b] — Attack with sword slash
+• [b]E[/b] — Open Victory Buff Chests
+• [b]R[/b] — Restart run (Clears all data)
+
+[color=#e6db74][b]🧠 THE AI DIRECTOR[/b][/color]
+The dungeon watches your every move in real time!
+• Overuse dodging left or right? Enemies predict your movement.
+• Running away repeatedly? The Director triggers speed debuffs.
+• Predictable rhythms? Mobs accelerate to break your cadence.
+
+[color=#a6e22e][b]🛡️ ROOM BUFFS & SURVIVAL[/b][/color]
+• Clear all enemies in a room to unlock its unique Victory Chest!
+• [b]Room 1[/b]: +8 Attack Damage | [b]Room 2[/b]: +20% Damage Resistance
+• [b]Room 3[/b]: +35 Movement Speed | [b]Room 4[/b]: +20 Max HP & Full Heal
+• [b]Survival Aid[/b]: Entering a new floor below 75% HP restores +20 HP!
+
+[color=#f92672][b]⚔️ THE DARK WIZARD (BOSS)[/b][/color]
+Beware: The Final Boss has a [b]40% chance on hit[/b] to shatter one of your buffs!"
+
+[node name="BtnCloseGuide" type="Button" parent="GuideModal/Panel"]
+custom_minimum_size = Vector2(160, 36)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -80.0
+offset_top = -48.0
+offset_right = 80.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "GOT IT"
+
+[node name="FadeOverlay" type="ColorRect" parent="."]
+visible = false
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_waves_sfx")
+
+[node name="SFXFocus" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_focus_sfx")
+
+[node name="SFXSelect" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_select_sfx")
