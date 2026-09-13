@@ -64,7 +64,7 @@ func _build_ui_structure() -> void:
 
 	# Prompt overlay at top
 	var prompt = Label.new()
-	prompt.text = "PRESS [R] OR [SPACE] TO RESTART"
+	prompt.text = "PRESS [R] OR [SPACE] TO RETURN TO TITLE SCREEN"
 	prompt.position = Vector2(0, 20)
 	prompt.size = Vector2(1280, 30)
 	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -125,7 +125,7 @@ func _populate_credits() -> void:
 
 	# Final Thank You
 	_add_header("THANK YOU FOR PLAYING!", 28, Color.WHITE)
-	_add_subheader("Press [R] or [SPACE] to return to Main Menu / Restart Run", 15, Color(0.85, 0.85, 0.85))
+	_add_subheader("Press [R] or [SPACE] to return to Title Screen", 15, Color(0.85, 0.85, 0.85))
 	_add_spacer(200)
 
 func _add_header(text: String, size: int, color: Color) -> void:
@@ -168,7 +168,7 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_R or event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
-			_restart_game()
+			_return_to_title_screen()
 
 func _start_music_or_sfx() -> void:
 	if ResourceLoader.exists("res://assets/level_up_jingle.wav"):
@@ -178,11 +178,13 @@ func _start_music_or_sfx() -> void:
 		add_child(sfx)
 		sfx.play()
 
-func _restart_game() -> void:
-	print("[EndCredits] Restarting game...")
-	var gm = get_node_or_null("/root/GameManager")
-	if gm and gm.has_method("restart_run"):
-		gm.restart_run()
-		queue_free()
-	else:
-		get_tree().reload_current_scene()
+func _return_to_title_screen() -> void:
+	print("[EndCredits] Returning to Title Screen...")
+	var ai = get_node_or_null("/root/AIDirector")
+	if ai:
+		if ai.has_method("reset_full_session"):
+			ai.reset_full_session()
+		elif ai.has_method("reset"):
+			ai.reset()
+	queue_free()
+	get_tree().change_scene_to_file("res://scenes/title_screen.tscn")

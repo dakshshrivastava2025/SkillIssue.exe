@@ -328,7 +328,7 @@ func _build_controls_guide() -> void:
 	_controls_guide.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_controls_guide.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	_controls_guide.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_controls_guide.text = "WASD/Arrows (Move) | Shift/K (Dash) | Space/J/Left-Click (Attack) | R (Restart)"
+	_controls_guide.text = "WASD or Arrows (Move) | Shift (Dash) | Space (Attack) | R (Restart)"
 	_controls_guide.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8, 0.85))
 	_controls_guide.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
 	_controls_guide.add_theme_font_size_override("font_size", 12)
@@ -563,9 +563,13 @@ func _sync_player_health() -> void:
 			update_player_hp(float(cur_hp), float(max_hp))
 
 func _sync_boss_health() -> void:
-	if not _current_boss or not is_instance_valid(_current_boss):
-		_current_boss = get_tree().get_first_node_in_group("boss")
-		if _current_boss and is_instance_valid(_current_boss):
+	if not _current_boss or not is_instance_valid(_current_boss) or _current_boss.is_queued_for_deletion():
+		_current_boss = null
+		for b in get_tree().get_nodes_in_group("boss"):
+			if b and is_instance_valid(b) and not b.is_queued_for_deletion():
+				_current_boss = b
+				break
+		if _current_boss:
 			_boss_hud.visible = true
 			if _current_boss.has_signal("boss_health_changed") and not _current_boss.boss_health_changed.is_connected(update_boss_hp):
 				_current_boss.boss_health_changed.connect(update_boss_hp)
@@ -574,6 +578,27 @@ func _sync_boss_health() -> void:
 		else:
 			if _boss_hud:
 				_boss_hud.visible = false
+			return
+	
+	if _current_boss and is_instance_valid(_current_boss) and not _current_boss.is_queued_for_deletion():
+		_boss_hud.visible = true
+		var cur_hp = _current_boss.get("current_health")
+		var max_hp = _current_boss.get("max_health")
+		if cur_hp != null and max_hp != null:
+			update_boss_hp(int(cur_hp), int(max_hp))
+	else:
+		_current_boss = null
+		if _boss_hud:
+			_boss_hud.visible = false
+
+func reset_boss_hud() -> void:
+	_current_boss = null
+	if _boss_hud:
+		_boss_hud.visible = false
+	if _boss_hp_bar_fill:
+		_boss_hp_bar_fill.size.x = BAR_WIDTH
+	if _boss_hp_label:
+		_boss_hp_label.text = "DARK WIZARD: 500 / 500 HP"
 
 func update_player_hp(curr: float, max_val: float) -> void:
 	if not _hp_bar_fill or not _hp_label:
@@ -619,6 +644,11 @@ func _on_retry_pressed() -> void:
 	get_tree().paused = false
 	if _death_screen_root:
 		_death_screen_root.visible = false
+	
+	for b in get_tree().get_nodes_in_group("boss"):
+		if b and is_instance_valid(b) and not b.is_queued_for_deletion() and b.has_method("reset_boss"):
+			b.reset_boss()
+	reset_boss_hud()
 	
 	var ai = get_node_or_null("/root/AIDirector")
 	if ai:

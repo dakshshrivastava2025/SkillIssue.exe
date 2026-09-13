@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://c6tit1escr001"]
 
-[ext_resource type="Script" path="res://scripts/title_screen.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cbdvv14gn23vx" path="res://scripts/title_screen.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://ctxphyrn3gcse" path="res://assets/title_screen/title_bg.png" id="2_bg"]
 [ext_resource type="Texture2D" uid="uid://gn1pyurfhi0o" path="res://assets/title_screen/title_logo.png" id="3_logo"]
-[ext_resource type="Shader" path="res://assets/shaders/screen_glitch.gdshader" id="4_glitch_sh"]
+[ext_resource type="Shader" uid="uid://cow7ubuqpep74" path="res://assets/shaders/screen_glitch.gdshader" id="4_glitch_sh"]
 [ext_resource type="AudioStream" uid="uid://b6a2kxbgn44nh" path="res://assets/title_screen/waves.mp3" id="5_waves"]
 [ext_resource type="AudioStream" uid="uid://3hq3tps04462" path="res://assets/title_screen/menu_focus.wav" id="6_focus"]
 [ext_resource type="AudioStream" uid="uid://cyf03oc37sxgr" path="res://assets/title_screen/menu_select.wav" id="7_select"]
@@ -17,7 +17,7 @@ shader = ExtResource("4_glitch_sh")
 shader_parameter/glitch_intensity = 0.0
 shader_parameter/chromatic_aberration = 0.002
 
-[node name="TitleScreen" type="Control"]
+[node name="TitleScreen" type="Control" unique_id=1356134920]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -26,7 +26,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="BackgroundLayer" type="Control" parent="."]
+[node name="BackgroundLayer" type="Control" parent="." unique_id=901098018]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,7 +34,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Background" type="TextureRect" parent="BackgroundLayer"]
+[node name="Background" type="TextureRect" parent="BackgroundLayer" unique_id=1799760641]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -46,7 +46,7 @@ texture = ExtResource("2_bg")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Vignette" type="ColorRect" parent="BackgroundLayer"]
+[node name="Vignette" type="ColorRect" parent="BackgroundLayer" unique_id=2024835397]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -55,7 +55,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.02, 0.01, 0.03, 0.12)
 
-[node name="Embers" type="CPUParticles2D" parent="BackgroundLayer"]
+[node name="Embers" type="CPUParticles2D" parent="BackgroundLayer" unique_id=456514236]
 position = Vector2(640, 720)
 amount = 48
 lifetime = 4.5
@@ -74,10 +74,10 @@ scale_amount_min = 2.0
 scale_amount_max = 4.5
 color_ramp = SubResource("Gradient_ember")
 
-[node name="GlitchLayer" type="CanvasLayer" parent="."]
+[node name="GlitchLayer" type="CanvasLayer" parent="." unique_id=116359415]
 layer = 5
 
-[node name="GlitchRect" type="ColorRect" parent="GlitchLayer"]
+[node name="GlitchRect" type="ColorRect" parent="GlitchLayer" unique_id=686176892]
 material = SubResource("ShaderMaterial_glitch")
 anchors_preset = 15
 anchor_right = 1.0
@@ -86,10 +86,10 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="UILayer" type="CanvasLayer" parent="."]
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=132630773]
 layer = 10
 
-[node name="ContentContainer" type="Control" parent="UILayer"]
+[node name="ContentContainer" type="Control" parent="UILayer" unique_id=342845983]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -97,7 +97,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TitleContainer" type="VBoxContainer" parent="UILayer/ContentContainer"]
+[node name="TitleContainer" type="VBoxContainer" parent="UILayer/ContentContainer" unique_id=1665077350]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -110,7 +110,7 @@ grow_horizontal = 2
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="Logo" type="TextureRect" parent="UILayer/ContentContainer/TitleContainer"]
+[node name="Logo" type="TextureRect" parent="UILayer/ContentContainer/TitleContainer" unique_id=568484263]
 custom_minimum_size = Vector2(680, 220)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -118,27 +118,26 @@ texture = ExtResource("3_logo")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Subtitle" type="Label" parent="UILayer/ContentContainer/TitleContainer"]
+[node name="Subtitle" type="Label" parent="UILayer/ContentContainer/TitleContainer" unique_id=257644708]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.88, 0.35, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 18
-text = "THE GASLIGHTING AI DUNGEON"
 horizontal_alignment = 1
 
-[node name="PromptLabel" type="Label" parent="UILayer/ContentContainer/TitleContainer"]
+[node name="PromptLabel" type="Label" parent="UILayer/ContentContainer/TitleContainer" unique_id=1427124025]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.45, 0.88, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 13
-text = ">> ADAPTIVE THREAT PROTOCOL ACTIVE // THE GASLIGHTING AI DUNGEON _"
+text = ">> ADAPTIVE THREAT PROTOCOL ACTIVE // THE ADAPTIVE AI DUNGEON _"
 horizontal_alignment = 1
 
-[node name="MenuButtons" type="VBoxContainer" parent="UILayer/ContentContainer"]
+[node name="MenuButtons" type="VBoxContainer" parent="UILayer/ContentContainer" unique_id=1509442421]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -154,7 +153,7 @@ grow_vertical = 0
 theme_override_constants/separation = 14
 alignment = 1
 
-[node name="StartButton" type="Button" parent="UILayer/ContentContainer/MenuButtons"]
+[node name="StartButton" type="Button" parent="UILayer/ContentContainer/MenuButtons" unique_id=1972028682]
 custom_minimum_size = Vector2(300, 56)
 layout_mode = 2
 focus_neighbor_top = NodePath("../QuitButton")
@@ -163,7 +162,7 @@ focus_next = NodePath("../ControlsButton")
 focus_previous = NodePath("../QuitButton")
 text = "▶  START PLAYING"
 
-[node name="ControlsButton" type="Button" parent="UILayer/ContentContainer/MenuButtons"]
+[node name="ControlsButton" type="Button" parent="UILayer/ContentContainer/MenuButtons" unique_id=1976397923]
 custom_minimum_size = Vector2(300, 46)
 layout_mode = 2
 focus_neighbor_top = NodePath("../StartButton")
@@ -172,7 +171,7 @@ focus_next = NodePath("../QuitButton")
 focus_previous = NodePath("../StartButton")
 text = "📜  HOW TO PLAY"
 
-[node name="QuitButton" type="Button" parent="UILayer/ContentContainer/MenuButtons"]
+[node name="QuitButton" type="Button" parent="UILayer/ContentContainer/MenuButtons" unique_id=360871253]
 custom_minimum_size = Vector2(300, 46)
 layout_mode = 2
 focus_neighbor_top = NodePath("../ControlsButton")
@@ -181,7 +180,7 @@ focus_next = NodePath("../StartButton")
 focus_previous = NodePath("../ControlsButton")
 text = "✕  QUIT GAME"
 
-[node name="Footer" type="HBoxContainer" parent="UILayer/ContentContainer"]
+[node name="Footer" type="HBoxContainer" parent="UILayer/ContentContainer" unique_id=1183363202]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -194,7 +193,7 @@ offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="Version" type="Label" parent="UILayer/ContentContainer/Footer"]
+[node name="Version" type="Label" parent="UILayer/ContentContainer/Footer" unique_id=1649173675]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.65, 0.65, 0.7, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -203,11 +202,11 @@ theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 13
 text = "SkillIssue.exe  •  v1.0.0"
 
-[node name="Spacer" type="Control" parent="UILayer/ContentContainer/Footer"]
+[node name="Spacer" type="Control" parent="UILayer/ContentContainer/Footer" unique_id=809990112]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Status" type="Label" parent="UILayer/ContentContainer/Footer"]
+[node name="Status" type="Label" parent="UILayer/ContentContainer/Footer" unique_id=1247018772]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.35, 0.45, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -216,7 +215,7 @@ theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 13
 text = "[ AI DIRECTOR TELEMETRY: READY ]"
 
-[node name="ControlsModal" type="Control" parent="UILayer"]
+[node name="ControlsModal" type="Control" parent="UILayer" unique_id=953508952]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -225,7 +224,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Backdrop" type="ColorRect" parent="UILayer/ControlsModal"]
+[node name="Backdrop" type="ColorRect" parent="UILayer/ControlsModal" unique_id=1838867848]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -234,7 +233,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.02, 0.01, 0.03, 0.85)
 
-[node name="Panel" type="PanelContainer" parent="UILayer/ControlsModal"]
+[node name="Panel" type="PanelContainer" parent="UILayer/ControlsModal" unique_id=1483461610]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -248,18 +247,18 @@ offset_bottom = 240.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Margin" type="MarginContainer" parent="UILayer/ControlsModal/Panel"]
+[node name="Margin" type="MarginContainer" parent="UILayer/ControlsModal/Panel" unique_id=380391520]
 layout_mode = 2
 theme_override_constants/margin_left = 28
 theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 28
 theme_override_constants/margin_bottom = 24
 
-[node name="VBox" type="VBoxContainer" parent="UILayer/ControlsModal/Panel/Margin"]
+[node name="VBox" type="VBoxContainer" parent="UILayer/ControlsModal/Panel/Margin" unique_id=939174540]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="Title" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox"]
+[node name="Title" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox" unique_id=1892219872]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.25, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
@@ -267,94 +266,70 @@ theme_override_font_sizes/font_size = 22
 text = "⚔  SURVIVAL PROTOCOL & CONTROLS"
 horizontal_alignment = 1
 
-[node name="Divider" type="ColorRect" parent="UILayer/ControlsModal/Panel/Margin/VBox"]
+[node name="Divider" type="ColorRect" parent="UILayer/ControlsModal/Panel/Margin/VBox" unique_id=89469960]
 custom_minimum_size = Vector2(0, 2)
 layout_mode = 2
 color = Color(0.8, 0.25, 0.3, 0.8)
 
-[node name="Grid" type="GridContainer" parent="UILayer/ControlsModal/Panel/Margin/VBox"]
+[node name="Grid" type="GridContainer" parent="UILayer/ControlsModal/Panel/Margin/VBox" unique_id=1456848104]
 layout_mode = 2
 theme_override_constants/h_separation = 24
-theme_override_constants/v_separation = 10
+theme_override_constants/v_separation = 14
 columns = 2
 
-[node name="MoveKey" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid"]
+[node name="MoveKey" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid" unique_id=1840072649]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 15
-text = "[ W / A / S / D ]"
+theme_override_font_sizes/font_size = 16
+text = "WASD or Arrows"
 
-[node name="MoveDesc" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid"]
+[node name="MoveDesc" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid" unique_id=19176762]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
-theme_override_font_sizes/font_size = 15
-text = "Walk & Move Adventurer"
+theme_override_font_sizes/font_size = 16
+text = "to move"
 
-[node name="AttackKey" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid"]
+[node name="DashKey" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid" unique_id=1433946851]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 15
-text = "[ LEFT CLICK / J ]"
+theme_override_font_sizes/font_size = 16
+text = "Shift"
 
-[node name="AttackDesc" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid"]
+[node name="DashDesc" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid" unique_id=1605476822]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
-theme_override_font_sizes/font_size = 15
-text = "Sword Slash (Aims toward mouse)"
+theme_override_font_sizes/font_size = 16
+text = "to dash"
 
-[node name="DashKey" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid"]
+[node name="AttackKey" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid" unique_id=766744900]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 15
-text = "[ SHIFT / K ]"
+theme_override_font_sizes/font_size = 16
+text = "Space"
 
-[node name="DashDesc" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid"]
+[node name="AttackDesc" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid" unique_id=1210130397]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
-theme_override_font_sizes/font_size = 15
-text = "Invulnerable Burst Dash"
+theme_override_font_sizes/font_size = 16
+text = "to attack"
 
-[node name="F1Key" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 15
-text = "[ F1 ]"
-
-[node name="F1Desc" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
-theme_override_font_sizes/font_size = 15
-text = "Toggle AI Director Telemetry"
-
-[node name="RestartKey" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 15
-text = "[ R ]"
-
-[node name="RestartDesc" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox/Grid"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
-theme_override_font_sizes/font_size = 15
-text = "Quick Restart Run"
-
-[node name="InfoBox" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox"]
+[node name="InfoBox" type="Label" parent="UILayer/ControlsModal/Panel/Margin/VBox" unique_id=1322046149]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.4, 0.45, 1)
 theme_override_font_sizes/font_size = 13
 text = "WARNING: The AI Director tracks your habits in real-time. Repetitive patterns trigger active counter-rules and psychological interventions."
 autowrap_mode = 3
 
-[node name="CloseButton" type="Button" parent="UILayer/ControlsModal/Panel/Margin/VBox"]
+[node name="CloseButton" type="Button" parent="UILayer/ControlsModal/Panel/Margin/VBox" unique_id=1949942264]
 custom_minimum_size = Vector2(200, 44)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "RETURN TO MENU"
 
-[node name="FadeLayer" type="CanvasLayer" parent="."]
+[node name="FadeLayer" type="CanvasLayer" parent="." unique_id=1253416496]
 layer = 20
 
-[node name="FadeOverlay" type="ColorRect" parent="FadeLayer"]
+[node name="FadeOverlay" type="ColorRect" parent="FadeLayer" unique_id=896375556]
 visible = false
 anchors_preset = 15
 anchor_right = 1.0
@@ -364,16 +339,15 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
-[node name="Audio" type="Node" parent="."]
+[node name="Audio" type="Node" parent="." unique_id=638740451]
 
-[node name="BGMPlayer" type="AudioStreamPlayer" parent="Audio"]
+[node name="BGMPlayer" type="AudioStreamPlayer" parent="Audio" unique_id=81323238]
 stream = ExtResource("5_waves")
 volume_db = -4.0
 
-[node name="FocusSFX" type="AudioStreamPlayer" parent="Audio"]
+[node name="FocusSFX" type="AudioStreamPlayer" parent="Audio" unique_id=1267221366]
 stream = ExtResource("6_focus")
 volume_db = -2.0
 
-[node name="SelectSFX" type="AudioStreamPlayer" parent="Audio"]
+[node name="SelectSFX" type="AudioStreamPlayer" parent="Audio" unique_id=1071091857]
 stream = ExtResource("7_select")
-volume_db = 0.0

@@ -45,6 +45,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			restart_run()
 
 func restart_run() -> void:
+	for b in get_tree().get_nodes_in_group("boss"):
+		if b and is_instance_valid(b) and not b.is_queued_for_deletion() and b.has_method("reset_boss"):
+			b.reset_boss()
+	var hud = get_node_or_null("/root/Main/DirectorHUD")
+	if hud and is_instance_valid(hud) and hud.has_method("reset_boss_hud"):
+		hud.reset_boss_hud()
+
 	var ai = get_node_or_null("/root/AIDirector")
 	if ai:
 		if ai.has_method("reset_full_session"):
@@ -65,8 +72,15 @@ func load_room(index: int) -> void:
 
 	current_room_index = index
 
-	# If restarting from room 0, ensure all telemetry and player state are fully restored
+	# If restarting from room 0, ensure all telemetry, boss, and player state are fully restored
 	if index == 0:
+		for b in get_tree().get_nodes_in_group("boss"):
+			if b and is_instance_valid(b) and not b.is_queued_for_deletion() and b.has_method("reset_boss"):
+				b.reset_boss()
+		var hud = get_node_or_null("/root/Main/DirectorHUD")
+		if hud and is_instance_valid(hud) and hud.has_method("reset_boss_hud"):
+			hud.reset_boss_hud()
+
 		var ai = get_node_or_null("/root/AIDirector")
 		if ai:
 			if ai.has_method("reset_full_session"):

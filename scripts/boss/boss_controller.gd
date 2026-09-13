@@ -44,6 +44,8 @@ var last_dodged_attack_id: int = 0
 
 func _ready() -> void:
 	add_to_group("boss")
+	add_to_group("enemy")
+	z_index = 10
 	current_health = max_health
 	boss_health_changed.emit(current_health, max_health)
 	
@@ -306,4 +308,21 @@ func take_damage(amount: int) -> void:
 		boss_defeated.emit()
 		died.emit()
 		queue_free()
+
+func reset_boss() -> void:
+	current_health = max_health
+	boss_health_changed.emit(current_health, max_health)
+	if melee_collision:
+		melee_collision.disabled = true
+	if thin_beam_collision:
+		thin_beam_collision.disabled = true
+	if thin_beam_sprite:
+		thin_beam_sprite.visible = false
+	if charged_beam_collision:
+		charged_beam_collision.disabled = true
+	if charged_beam_sprite:
+		charged_beam_sprite.visible = false
+	if sprite:
+		sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_set_state(State.CHASE, 1.2)
 

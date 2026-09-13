@@ -91,7 +91,7 @@ func _process(delta: float) -> void:
 		_cursor_blink_time = 0.0
 		_cursor_visible = !_cursor_visible
 		if prompt_label:
-			var base_text = ">> ADAPTIVE THREAT PROTOCOL ACTIVE // THE GASLIGHTING AI DUNGEON"
+			var base_text = ">> ADAPTIVE THREAT PROTOCOL ACTIVE // THE ADAPTIVE AI DUNGEON"
 			prompt_label.text = base_text + (" _" if _cursor_visible else "")
 
 	# Subtle glitch breathing

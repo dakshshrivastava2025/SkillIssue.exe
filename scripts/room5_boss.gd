@@ -51,6 +51,8 @@ func _listen_to_boss_death() -> void:
 	if boss:
 		# Boss exists in scene — reposition it to the upper portion of the magic circle
 		boss.position = Vector2(0, -200)
+		if boss.has_method("reset_boss"):
+			boss.reset_boss()
 		register_enemy(boss)
 	else:
 		var boss_paths = [
@@ -66,5 +68,7 @@ func _listen_to_boss_death() -> void:
 					b.name = "Boss"
 					b.global_position = global_position + Vector2(0, -200)
 					add_child(b)
+					if b.has_method("reset_boss"):
+						b.reset_boss()
 					register_enemy(b)
 					break

@@ -307,7 +307,7 @@ grow_vertical = 0
 theme_override_colors/font_color = Color(0.75, 0.75, 0.8, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 12
-text = "WASD/Arrows (Move) | Shift/K (Dash) | Space/J/Left-Click (Attack) | E (Interact Chest) | R (Restart)"
+text = "WASD or Arrows (Move) | Shift (Dash) | Space (Attack) | E (Interact Chest) | R (Restart)"
 horizontal_alignment = 1
 
 [node name="AIDirectorPrompt" type="PanelContainer" parent="CanvasLayer/HUDController"]

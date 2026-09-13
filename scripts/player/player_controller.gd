@@ -222,6 +222,11 @@ func _physics_process(delta: float) -> void:
 	var input_vec = _get_input_vector()
 	is_moving = (input_vec != Vector2.ZERO)
 
+	var effective_speed = speed
+	var ai_node = get_node_or_null("/root/AIDirector")
+	if ai_node and ai_node.get("speed_debuff_active") == true:
+		effective_speed *= 0.65
+
 	if is_moving:
 		facing_vector = input_vec
 		
@@ -244,12 +249,12 @@ func _physics_process(delta: float) -> void:
 		
 		if _is_on_ice:
 			# Ice drifting: wide turning arcs and frictionless gliding
-			_ice_drift = _ice_drift.lerp(input_vec * speed * 1.12, 0.035)
+			_ice_drift = _ice_drift.lerp(input_vec * effective_speed * 1.12, 0.035)
 			velocity = _ice_drift
 			_is_on_ice = false
 		else:
-			_ice_drift = input_vec * speed
-			velocity = input_vec * speed
+			_ice_drift = input_vec * effective_speed
+			velocity = input_vec * effective_speed
 	else:
 		if _is_on_ice:
 			# Ice slide: prolonged drift when releasing input
@@ -257,7 +262,7 @@ func _physics_process(delta: float) -> void:
 			velocity = _ice_drift
 			_is_on_ice = false
 		else:
-			velocity = velocity.move_toward(Vector2.ZERO, speed * 8.0 * delta)
+			velocity = velocity.move_toward(Vector2.ZERO, effective_speed * 8.0 * delta)
 			_ice_drift = Vector2.ZERO
 
 	# Play appropriate animation state if not attacking or dashing
@@ -273,6 +278,24 @@ func _unhandled_input(event: InputEvent) -> void:
 	if is_dead:
 		return
 
+	# Dash Input (Action "dash", Shift, C, K, Right click)
+	var dash_pressed = false
+	if event.is_action_pressed("dash"):
+		dash_pressed = true
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		dash_pressed = true
+	elif event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_SHIFT or event.keycode == KEY_C or event.keycode == KEY_K:
+			dash_pressed = true
+
+	if dash_pressed and not is_dashing and unlocked_abilities.get("dash", true):
+		var ai = get_node_or_null("/root/AIDirector")
+		if not ai or not ai.get("dash_disabled_active"):
+			var in_vec = _get_input_vector()
+			_start_dash(facing_vector if in_vec == Vector2.ZERO else in_vec)
+		else:
+			print("[Player] Dash is currently blocked/disabled by AI Director!")
+
 	# Attack Input (Left click, Space, J, Z, or action "attack")
 	if event.is_action_pressed("attack"):
 		if attack_cooldown <= 0.0 and not is_dashing:
@@ -283,13 +306,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if (event.keycode == KEY_J or event.keycode == KEY_Z or event.keycode == KEY_SPACE) and attack_cooldown <= 0.0 and not is_dashing:
 			_perform_attack()
-		elif (event.keycode == KEY_SHIFT or event.keycode == KEY_C or event.keycode == KEY_K) and not is_dashing and unlocked_abilities.get("dash", true):
-			var in_vec = _get_input_vector()
-			_start_dash(facing_vector if in_vec == Vector2.ZERO else in_vec)
-	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-		if not is_dashing and unlocked_abilities.get("dash", true):
-			var in_vec = _get_input_vector()
-			_start_dash(facing_vector if in_vec == Vector2.ZERO else in_vec)
 
 func _get_input_vector() -> Vector2:
 	var dir = Vector2.ZERO
@@ -414,10 +430,21 @@ func _perform_attack() -> void:
 				if dist < 30.0 or aim_dir.dot(to_enemy.normalized()) > 0.15:
 					hit_targets.append(enemy)
 
-	for target in hit_targets:
-		if is_instance_valid(target) and target.has_method("take_damage"):
-			target.take_damage(attack_damage)
-			print("[Player] Hit %s for %.1f damage!" % [target.name, attack_damage])
+	var effective_damage = attack_damage
+	var ai_node = get_node_or_null("/root/AIDirector")
+	if ai_node and ai_node.get("damage_debuff_active") == true:
+		effective_damage *= 0.65
+
+	if hit_targets.size() > 0:
+		if ai_node and ai_node.has_method("record_attack_hit"):
+			ai_node.record_attack_hit(effective_damage)
+		for target in hit_targets:
+			if is_instance_valid(target) and target.has_method("take_damage"):
+				target.take_damage(effective_damage)
+				print("[Player] Hit %s for %.1f damage (Base: %.1f)!" % [target.name, effective_damage, attack_damage])
+	else:
+		if ai_node and ai_node.has_method("record_attack_miss"):
+			ai_node.record_attack_miss()
 
 ## Called by IceZone in Room 2 & Room 4
 func apply_ice_effect(friction: float) -> void:

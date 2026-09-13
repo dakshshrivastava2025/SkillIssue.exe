@@ -48,12 +48,16 @@ const ROOM_BUFFS = {
 func _ready() -> void:
 	collision_layer = 1
 	collision_mask = 2
+	z_index = 3
+	z_as_relative = false
 	
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	
 	if label:
 		label.visible = false
+		label.z_index = 4
+		label.z_as_relative = false
 	if sprite:
 		sprite.frame = 0
 		
@@ -65,6 +69,8 @@ var _player_overlapping: bool = false
 
 func unlock_chest() -> void:
 	is_locked = false
+	z_index = 3
+	z_as_relative = false
 	# Golden glowing pulse
 	var tw = create_tween()
 	tw.set_loops(3)
@@ -104,6 +110,8 @@ func open_chest() -> void:
 	if is_open:
 		return
 	is_open = true
+	z_index = 3
+	z_as_relative = false
 	
 	if sprite:
 		sprite.frame = 1
