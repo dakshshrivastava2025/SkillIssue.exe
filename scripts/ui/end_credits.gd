@@ -18,22 +18,28 @@ const TEAM_MEMBERS: Array[Dictionary] = [
 		"color": Color(1.0, 0.85, 0.3) # Gold
 	},
 	{
-		"name": "Core Engine Lead",
+		"name": "Ark Maheshwari",
 		"role": "Core Engine & Room Architecture",
 		"quote": "\"5 rooms, zero bugs, infinite friction on ice!\"",
 		"color": Color(0.3, 0.9, 1.0) # Cyan
 	},
 	{
-		"name": "AI Integration Specialist",
-		"role": "AI Director & Telemetry Systems",
+		"name": "Neev Agrawal",
+		"role": "AI Integration Specialist & Telemetry",
 		"quote": "\"We saw you dodge right 42 times... adapt or die!\"",
 		"color": Color(0.9, 0.4, 1.0) # Purple
 	},
 	{
-		"name": "UI/UX Designer",
-		"role": "Interface & Visual Polish",
-		"quote": "\"Making retro telemetry look sleek & dynamic.\"",
+		"name": "Burhanuddin Hitawala",
+		"role": "UI / UX & Visual Design Lead",
+		"quote": "\"Making retro telemetry look sleek & dynamic!\"",
 		"color": Color(0.4, 1.0, 0.5) # Emerald
+	},
+	{
+		"name": "Jacob Cherry",
+		"role": "Game Assets & Sound Designer",
+		"quote": "\"Retro pixel art & atmospheric dungeon soundscapes!\"",
+		"color": Color(1.0, 0.5, 0.4) # Coral / Orange
 	}
 ]
 
