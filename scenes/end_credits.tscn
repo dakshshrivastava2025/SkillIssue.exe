@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://endcredits001"]
+
+[ext_resource type="Script" path="res://scripts/ui/end_credits.gd" id="1_credits_script"]
+
+[node name="EndCredits" type="CanvasLayer"]
+layer = 100
+script = ExtResource("1_credits_script")

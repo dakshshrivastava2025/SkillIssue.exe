@@ -127,3 +127,28 @@ func open_chest() -> void:
 		
 	print("[TreasureChest] Room %d Chest opened! Reward: %s" % [room_number, reward["name"]])
 	chest_opened.emit(reward)
+
+	# If this is Room 5 (Final Victory Chest), trigger the Interactive End Credits Roll!
+	if room_number == 5:
+		_trigger_end_credits()
+
+func _trigger_end_credits() -> void:
+	await get_tree().create_timer(1.2).timeout
+	var credits_scene = null
+	for cp in ["res://scenes/end_credits.tscn", "res://Scenes/end_credits.tscn"]:
+		if ResourceLoader.exists(cp):
+			credits_scene = load(cp)
+			break
+	if credits_scene:
+		var credits = credits_scene.instantiate()
+		get_tree().root.add_child(credits)
+		print("[TreasureChest] Final Victory Chest opened -> End Credits triggered!")
+	else:
+		var credits_script = load("res://scripts/ui/end_credits.gd")
+		if credits_script:
+			var credits = CanvasLayer.new()
+			credits.name = "EndCredits"
+			credits.layer = 100
+			credits.set_script(credits_script)
+			get_tree().root.add_child(credits)
+			print("[TreasureChest] Final Victory Chest opened -> End Credits script triggered!")
