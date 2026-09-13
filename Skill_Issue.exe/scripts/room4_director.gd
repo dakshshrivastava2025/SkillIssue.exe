@@ -64,8 +64,6 @@ func _get_wall_colliders() -> Array[Rect2]:
 		Rect2(270, -110, 70, 80),  # Top-Right Pillar
 		Rect2(-270, 190, 70, 80),  # Bottom-Left Pillar
 		Rect2(270, 190, 70, 80),   # Bottom-Right Pillar
-		# Center Pit Grate
-		Rect2(0, 40, 190, 150),    # Center Grate Pit Barrier
 	]
 
 func _physics_process(_delta: float) -> void:
