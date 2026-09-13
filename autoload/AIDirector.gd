@@ -175,6 +175,7 @@ func reset_full_session() -> void:
 	reset()
 
 func reset() -> void:
+	current_room = 1
 	kills = 0
 	damage_dealt_total = 0.0
 	damage_taken_total = 0.0

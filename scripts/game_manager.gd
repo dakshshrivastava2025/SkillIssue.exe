@@ -42,10 +42,19 @@ func _unhandled_input(event: InputEvent) -> void:
 					e.take_damage(9999.0)
 		elif event.keycode == KEY_R:
 			print("[GameManager] Restarting current run (R)...")
-			var p = get_tree().get_first_node_in_group("player")
-			if p and is_instance_valid(p) and p.has_method("reset_state"):
-				p.reset_state()
-			load_room(0)
+			restart_run()
+
+func restart_run() -> void:
+	var ai = get_node_or_null("/root/AIDirector")
+	if ai:
+		if ai.has_method("reset_full_session"):
+			ai.reset_full_session()
+		elif ai.has_method("reset"):
+			ai.reset()
+	var p = get_tree().get_first_node_in_group("player")
+	if p and is_instance_valid(p) and p.has_method("reset_state"):
+		p.reset_state()
+	load_room(0)
 
 ## Load a room by index (0-4).
 func load_room(index: int) -> void:
@@ -56,8 +65,14 @@ func load_room(index: int) -> void:
 
 	current_room_index = index
 
-	# If restarting from room 0, ensure player is fully restored
+	# If restarting from room 0, ensure all telemetry and player state are fully restored
 	if index == 0:
+		var ai = get_node_or_null("/root/AIDirector")
+		if ai:
+			if ai.has_method("reset_full_session"):
+				ai.reset_full_session()
+			elif ai.has_method("reset"):
+				ai.reset()
 		var p = get_tree().get_first_node_in_group("player")
 		if p and is_instance_valid(p) and p.has_method("reset_state"):
 			p.reset_state()

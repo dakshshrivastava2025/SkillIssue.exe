@@ -11,12 +11,19 @@ signal ability_unlocked(ability_name: String)
 signal died()
 signal player_died()
 
-@export var max_health: float = 100.0
-@export var speed: float = 240.0
-@export var dash_speed: float = 650.0
-@export var dash_duration: float = 0.25
-@export var attack_damage: float = 25.0
-@export var attack_range: float = 65.0
+const BASE_MAX_HEALTH: float = 100.0
+const BASE_SPEED: float = 240.0
+const BASE_DASH_SPEED: float = 650.0
+const BASE_DASH_DURATION: float = 0.25
+const BASE_ATTACK_DAMAGE: float = 25.0
+const BASE_ATTACK_RANGE: float = 65.0
+
+@export var max_health: float = BASE_MAX_HEALTH
+@export var speed: float = BASE_SPEED
+@export var dash_speed: float = BASE_DASH_SPEED
+@export var dash_duration: float = BASE_DASH_DURATION
+@export var attack_damage: float = BASE_ATTACK_DAMAGE
+@export var attack_range: float = BASE_ATTACK_RANGE
 
 var health: float = 100.0:
 	get:
@@ -102,10 +109,23 @@ func reset_state() -> void:
 	_is_on_ice = false
 	_ice_drift = Vector2.ZERO
 	damage_resistance = 0.0
-	attack_damage = 10.0
-	speed = 130.0
-	max_health = 100.0
+	attack_damage = BASE_ATTACK_DAMAGE
+	speed = BASE_SPEED
+	dash_speed = BASE_DASH_SPEED
+	dash_duration = BASE_DASH_DURATION
+	max_health = BASE_MAX_HEALTH
+	attack_range = BASE_ATTACK_RANGE
 	active_buffs.clear()
+	unlocked_abilities = {
+		"dash": true,
+		"attack_boost": false,
+		"health_boost": false,
+		"speed_boots": false
+	}
+	invert_controls = false
+	attack_spam_streak = 0
+	attack_count = 0
+	last_attack_time = 0.0
 	attack_cooldown = 0.0
 	_current_hp = max_health
 	health_changed.emit(_current_hp, max_health)
@@ -114,7 +134,35 @@ func reset_state() -> void:
 	else:
 		modulate = Color.WHITE
 	_play_anim("idle")
-	print("[Player] State & Health reset to %.1f/%.1f" % [_current_hp, max_health])
+	print("[Player] State & Health fully reset to %.1f/%.1f (Damage: %.1f, Speed: %.1f)" % [_current_hp, max_health, attack_damage, speed])
+
+func heal(amount: float) -> void:
+	if is_dead or _current_hp <= 0.0:
+		return
+	var old_hp = _current_hp
+	_current_hp = min(max_health, _current_hp + amount)
+	health_changed.emit(_current_hp, max_health)
+	_play_heal_sfx_and_flash()
+	print("[Player] Healed for +%.1f HP! (%.1f -> %.1f/%.1f)" % [amount, old_hp, _current_hp, max_health])
+
+func check_level_start_heal() -> void:
+	# Heal +20 HP if current HP is below 75% of max HP on new level
+	if _current_hp < (max_health * 0.75):
+		var heal_amount: float = 20.0
+		heal(heal_amount)
+		var ai = get_node_or_null("/root/AIDirector")
+		if ai and ai.has_signal("director_intervention_triggered"):
+			ai.director_intervention_triggered.emit("heal", "New Level Respite: Below 75% HP -> Restored +20 HP!")
+
+func _play_heal_sfx_and_flash() -> void:
+	if ResourceLoader.exists("res://assets/hp-up.wav"):
+		var sfx = AudioStreamPlayer.new()
+		sfx.stream = load("res://assets/hp-up.wav")
+		sfx.volume_db = 0.0
+		add_child(sfx)
+		sfx.play()
+		sfx.finished.connect(func(): sfx.queue_free())
+	_flash_buff(Color(0.4, 2.0, 0.6, 1.0))
 
 func reset_health() -> void:
 	reset_state()
@@ -426,7 +474,7 @@ func remove_random_buff() -> bool:
 	var message = ""
 	match chosen_buff:
 		"strength_buff", "attack_boost":
-			attack_damage = max(10.0, attack_damage - 8.0)
+			attack_damage = max(BASE_ATTACK_DAMAGE, attack_damage - 8.0)
 			message = "⚠️ CURSE: Boss shattered your STRENGTH BUFF! (-8 Attack Damage)"
 			print("[Player] Boss stripped strength buff! Attack damage is now %.1f" % attack_damage)
 		"resistance_buff", "frost_resistance":
@@ -434,11 +482,11 @@ func remove_random_buff() -> bool:
 			message = "⚠️ CURSE: Boss shattered your RESISTANCE BUFF! (Lost 20% Resistance)"
 			print("[Player] Boss stripped resistance buff! Resistance is now %.0f%%" % (damage_resistance * 100.0))
 		"speed_boots":
-			speed = max(130.0, speed - 35.0)
+			speed = max(BASE_SPEED, speed - 35.0)
 			message = "⚠️ CURSE: Boss drained your SPEED BUFF! (-35 Movement Speed)"
 			print("[Player] Boss stripped speed buff! Movement speed is now %.1f" % speed)
 		"health_buff", "health_boost":
-			max_health = max(100.0, max_health - 20.0)
+			max_health = max(BASE_MAX_HEALTH, max_health - 20.0)
 			_current_hp = min(_current_hp, max_health)
 			health_changed.emit(_current_hp, max_health)
 			message = "⚠️ CURSE: Boss drained your VITALITY BUFF! (-20 Max HP)"

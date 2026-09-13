@@ -53,6 +53,9 @@ func _ensure_player() -> void:
 		if existing.get("is_dead") or existing.get("health") <= 0.0:
 			if existing.has_method("reset_state"):
 				existing.reset_state()
+		else:
+			if existing.has_method("check_level_start_heal"):
+				existing.check_level_start_heal()
 		return
 
 	# First time: create the player from player.tscn scene if available
