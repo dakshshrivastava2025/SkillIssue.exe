@@ -26,6 +26,7 @@ var _dash_direction: Vector2 = Vector2.ZERO
 var _ice_drift: Vector2 = Vector2.ZERO
 var _is_on_ice: bool = false
 var _facing_direction: Vector2 = Vector2.DOWN
+var invert_controls: bool = false
 
 var _tracker: Node = null
 var _attack_cooldown: float = 0.0
@@ -128,6 +129,8 @@ func _get_input_vector() -> Vector2:
 		dir.x -= 1.0
 	if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT):
 		dir.x += 1.0
+	if invert_controls:
+		dir = -dir
 	return dir.normalized()
 
 func _perform_attack() -> void:

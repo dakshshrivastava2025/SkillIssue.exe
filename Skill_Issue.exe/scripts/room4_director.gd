@@ -29,6 +29,9 @@ const SPAWN_FALLBACK: Array[Vector2] = [
 func _ready() -> void:
 	room_name = "Room 4 — The Dungeon Learns"
 	_player_ref = get_tree().get_first_node_in_group("player")
+	if _player_ref and "invert_controls" in _player_ref:
+		_player_ref.invert_controls = true
+		print("[Room4] Player controls inverted!")
 	if director_label:
 		director_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		director_label.position = Vector2(-250, -220)
@@ -36,6 +39,12 @@ func _ready() -> void:
 	super._ready()
 	_connect_director_signals()
 	_setup_ice_zone()
+	tree_exiting.connect(_on_tree_exiting)
+
+func _on_tree_exiting() -> void:
+	if _player_ref and is_instance_valid(_player_ref) and "invert_controls" in _player_ref:
+		_player_ref.invert_controls = false
+		print("[Room4] Player controls restored.")
 
 func _get_theme_floor_color() -> Color:
 	return Color(0.12, 0.06, 0.18) # Dark AI Director purple floor tint
