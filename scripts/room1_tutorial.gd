@@ -22,8 +22,11 @@ const PROMPTS: Array[String] = [
 const SPAWN_FALLBACK: Array[Vector2] = [
 	Vector2(-220, -140),
 	Vector2(220, -140),
-	Vector2(0, 190),
+	Vector2(0, 230),
 ]
+
+func _get_player_spawn_position() -> Vector2:
+	return Vector2(0, 60)
 
 func _ready() -> void:
 	room_name = "Tutorial — Welcome, Hero"

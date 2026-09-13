@@ -54,8 +54,9 @@ func _ensure_player() -> void:
 			if existing.has_method("reset_state"):
 				existing.reset_state()
 		else:
-			if existing.has_method("check_level_start_heal"):
-				existing.check_level_start_heal()
+			var r_num = _get_room_number()
+			if r_num > 1 and existing.has_method("on_new_level_entered"):
+				existing.on_new_level_entered(r_num)
 		return
 
 	# First time: create the player from player.tscn scene if available
@@ -251,8 +252,8 @@ func _build_exit_door(env: Node2D) -> void:
 	var half_path = _get_door_half_open_path()
 	var open_path = _get_door_fully_open_path()
 	var has_overlay = (intact_path != "" and ResourceLoader.exists(intact_path)) or \
-	                  (half_path != "" and ResourceLoader.exists(half_path)) or \
-	                  (open_path != "" and ResourceLoader.exists(open_path))
+					  (half_path != "" and ResourceLoader.exists(half_path)) or \
+					  (open_path != "" and ResourceLoader.exists(open_path))
 
 	if has_overlay:
 		_door_overlay = Node2D.new()
@@ -314,6 +315,14 @@ func _on_door_entered(body: Node) -> void:
 func _should_have_statues() -> bool:
 	return true
 
+func _get_statue_positions() -> Array[Vector2]:
+	return [
+		Vector2(-500, -250), # Top-Left Corner
+		Vector2(500, -250),  # Top-Right Corner
+		Vector2(-500, 240),  # Bottom-Left Corner
+		Vector2(500, 240)   # Bottom-Right Corner
+	]
+
 func _spawn_statues(env: Node2D) -> void:
 	if not _should_have_statues():
 		return
@@ -321,13 +330,7 @@ func _spawn_statues(env: Node2D) -> void:
 	if not statue_script:
 		return
 
-	# Genuine 4 room corners inside the dungeon walls
-	var pos_list = [
-		Vector2(-500, -250), # Top-Left Corner
-		Vector2(500, -250),  # Top-Right Corner
-		Vector2(-500, 240),  # Bottom-Left Corner
-		Vector2(500, 240)   # Bottom-Right Corner
-	]
+	var pos_list = _get_statue_positions()
 	for p in pos_list:
 		var statue = CharacterBody2D.new()
 		statue.set_script(statue_script)
@@ -553,4 +556,3 @@ func _build_treasure_chest(env: Node2D) -> void:
 		chest.is_locked = true
 	env.add_child(chest)
 	_room_chest = chest
-
