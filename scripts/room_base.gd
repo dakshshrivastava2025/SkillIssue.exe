@@ -53,6 +53,10 @@ func _ensure_player() -> void:
 		if existing.get("is_dead") or existing.get("health") <= 0.0:
 			if existing.has_method("reset_state"):
 				existing.reset_state()
+		else:
+			var r_num = _get_room_number()
+			if r_num > 1 and existing.has_method("on_new_level_entered"):
+				existing.on_new_level_entered(r_num)
 		return
 
 	# First time: create the player from player.tscn scene if available

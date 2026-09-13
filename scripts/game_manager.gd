@@ -41,11 +41,17 @@ func _unhandled_input(event: InputEvent) -> void:
 				elif e.has_method("take_damage"):
 					e.take_damage(9999.0)
 		elif event.keycode == KEY_R:
-			print("[GameManager] Restarting current run (R)...")
-			var p = get_tree().get_first_node_in_group("player")
-			if p and is_instance_valid(p) and p.has_method("reset_state"):
-				p.reset_state()
-			load_room(0)
+			restart_game()
+
+func restart_game() -> void:
+	print("[GameManager] Restarting game (R) — clearing all telemetry, buffs, and habits for fresh run...")
+	var ai = get_node_or_null("/root/AIDirector")
+	if ai and ai.has_method("reset_all_data"):
+		ai.reset_all_data()
+	var p = get_tree().get_first_node_in_group("player")
+	if p and is_instance_valid(p) and p.has_method("reset_state"):
+		p.reset_state()
+	load_room(0)
 
 ## Load a room by index (0-4).
 func load_room(index: int) -> void:
@@ -56,11 +62,19 @@ func load_room(index: int) -> void:
 
 	current_room_index = index
 
-	# If restarting from room 0, ensure player is fully restored
+	# If restarting from room 0, ensure all telemetry and player data is fully cleared
 	if index == 0:
+		var ai = get_node_or_null("/root/AIDirector")
+		if ai and ai.has_method("reset_all_data"):
+			ai.reset_all_data()
 		var p = get_tree().get_first_node_in_group("player")
 		if p and is_instance_valid(p) and p.has_method("reset_state"):
 			p.reset_state()
+	else:
+		# Heal +20 HP if below 75% max health for every new level
+		var p = get_tree().get_first_node_in_group("player")
+		if p and is_instance_valid(p) and p.has_method("on_new_level_entered"):
+			p.on_new_level_entered(index + 1)
 
 	# Clear previous room
 	if _current_room_instance and is_instance_valid(_current_room_instance):

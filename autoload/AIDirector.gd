@@ -349,3 +349,37 @@ func get_profile_summary() -> String:
 		kills, retreat_time, dominant_dodge if dominant_dodge != "" else "none",
 		str(is_aggressive), str(is_retreater), str(attack_is_rhythmic)
 	]
+
+## Clears all tracked telemetry, player habits, modifiers, and session state for a completely fresh run.
+func reset_all_data() -> void:
+	kills = 0
+	damage_dealt_total = 0.0
+	damage_taken_total = 0.0
+	damage_taken_recent = 0.0
+	missed_attacks = 0
+	hit_attacks = 0
+	consecutive_misses = 0
+	dodge_counts = {"left": 0, "right": 0, "up": 0, "down": 0}
+	retreat_time = 0.0
+	retreat_timer_streak = 0.0
+	attack_timestamps.clear()
+	current_room = 1
+	dominant_dodge = ""
+	is_aggressive = false
+	is_retreater = false
+	attack_is_rhythmic = false
+	speed_debuff_active = false
+	damage_debuff_active = false
+	dash_disabled_active = false
+	_session_start = Time.get_ticks_msec() / 1000.0
+	_signals_fired.clear()
+	intervention_cooldowns.clear()
+	emit_signal("state_space_updated", get_state_space_vector())
+	print("[AIDirector] All telemetry and habit tracking data cleared for fresh run.")
+
+func reset_full_session() -> void:
+	reset_all_data()
+
+func reset() -> void:
+	reset_all_data()
+

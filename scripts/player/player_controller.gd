@@ -94,6 +94,8 @@ func _ready() -> void:
 
 	_play_anim("idle")
 
+var _last_healed_level: int = 1
+
 func reset_state() -> void:
 	is_dead = false
 	invulnerable = false
@@ -102,11 +104,21 @@ func reset_state() -> void:
 	_is_on_ice = false
 	_ice_drift = Vector2.ZERO
 	damage_resistance = 0.0
-	attack_damage = 10.0
-	speed = 130.0
+	attack_damage = 25.0
+	speed = 240.0
 	max_health = 100.0
 	active_buffs.clear()
+	unlocked_abilities = {
+		"dash": true,
+		"attack_boost": false,
+		"health_boost": false,
+		"speed_boots": false
+	}
+	invert_controls = false
+	attack_spam_streak = 0
+	attack_count = 0
 	attack_cooldown = 0.0
+	_last_healed_level = 1
 	_current_hp = max_health
 	health_changed.emit(_current_hp, max_health)
 	if anim_sprite:
@@ -114,7 +126,33 @@ func reset_state() -> void:
 	else:
 		modulate = Color.WHITE
 	_play_anim("idle")
-	print("[Player] State & Health reset to %.1f/%.1f" % [_current_hp, max_health])
+	print("[Player] State & Health fully reset (HP: %.1f/%.1f, ATK: %.1f, SPD: %.1f)" % [
+		_current_hp, max_health, attack_damage, speed
+	])
+
+## Called when entering any new level. Restores +20 HP if below 75% max health.
+func on_new_level_entered(level_number: int = 0) -> void:
+	if is_dead or _current_hp <= 0.0:
+		return
+	if level_number > 0 and level_number == _last_healed_level:
+		return
+	if level_number > 0:
+		_last_healed_level = level_number
+	
+	var threshold = max_health * 0.75
+	if _current_hp < threshold:
+		var heal_amount: float = 20.0
+		var old_hp: float = _current_hp
+		_current_hp = min(_current_hp + heal_amount, max_health)
+		health_changed.emit(_current_hp, max_health)
+		_flash_buff(Color(0.3, 2.0, 0.4, 1.0))
+		var msg = "💚 LEVEL SURVIVAL: Restored +%.0f HP (was below 75%%)! HP: %.0f/%.0f" % [
+			heal_amount, _current_hp, max_health
+		]
+		print("[Player] %s" % msg)
+		var ai = get_node_or_null("/root/AIDirector")
+		if ai and ai.has_signal("director_intervention_triggered"):
+			ai.director_intervention_triggered.emit("heal", msg)
 
 func reset_health() -> void:
 	reset_state()
@@ -426,7 +464,7 @@ func remove_random_buff() -> bool:
 	var message = ""
 	match chosen_buff:
 		"strength_buff", "attack_boost":
-			attack_damage = max(10.0, attack_damage - 8.0)
+			attack_damage = max(25.0, attack_damage - 8.0)
 			message = "⚠️ CURSE: Boss shattered your STRENGTH BUFF! (-8 Attack Damage)"
 			print("[Player] Boss stripped strength buff! Attack damage is now %.1f" % attack_damage)
 		"resistance_buff", "frost_resistance":
@@ -434,7 +472,7 @@ func remove_random_buff() -> bool:
 			message = "⚠️ CURSE: Boss shattered your RESISTANCE BUFF! (Lost 20% Resistance)"
 			print("[Player] Boss stripped resistance buff! Resistance is now %.0f%%" % (damage_resistance * 100.0))
 		"speed_boots":
-			speed = max(130.0, speed - 35.0)
+			speed = max(240.0, speed - 35.0)
 			message = "⚠️ CURSE: Boss drained your SPEED BUFF! (-35 Movement Speed)"
 			print("[Player] Boss stripped speed buff! Movement speed is now %.1f" % speed)
 		"health_buff", "health_boost":
