@@ -62,7 +62,7 @@ func _spawn_enemies() -> void:
 	var count: int = randi_range(4, 7)
 	if AIDirector.is_aggressive:
 		count += EXTRA_COUNT
-	var types = ["armored_skeleton", "skeleton", "goblin"]
+	var types = ["armored_skeleton", "skeleton", "goblin", "dark_cultist"]
 	for i in range(count):
 		var z = ZombieScene.instantiate()
 		z.enemy_type = types[randi() % types.size()]

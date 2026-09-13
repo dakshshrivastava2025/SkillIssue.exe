@@ -21,6 +21,7 @@ var _unlock_sfx: AudioStreamPlayer = null
 var _door_overlay: Node2D = null  # Holds animated door-open sprites
 var _door_blocker: StaticBody2D = null  # Solid collision barrier blocking exit until cleared
 var _door_blocker_col: CollisionShape2D = null
+var _room_chest: Area2D = null
 
 func _ready() -> void:
 	_room_active = true
@@ -170,6 +171,9 @@ func _build_environment() -> void:
 		_unlock_sfx.stream = load("res://assets/bars_open.wav")
 		_unlock_sfx.volume_db = -4.0
 		env.add_child(_unlock_sfx)
+
+	# 8. Room Buff Treasure Chest
+	_build_treasure_chest(env)
 
 func _build_archway_tunnels(env: Node2D) -> void:
 	# Tunnel 1 (Left Wall Open Doorway)
@@ -443,6 +447,10 @@ func _on_room_cleared() -> void:
 	if _unlock_sfx and is_instance_valid(_unlock_sfx):
 		_unlock_sfx.play()
 
+	# Unlock victory treasure chest with room buff
+	if _room_chest and is_instance_valid(_room_chest) and _room_chest.has_method("unlock_chest"):
+		_room_chest.unlock_chest()
+
 	# Animate door opening
 	_animate_door_opening()
 
@@ -502,3 +510,42 @@ func _animate_door_opening() -> void:
 			fade.tween_property(spr_half, "modulate:a", 0.0, 0.4)
 		if spr_intact:
 			fade.tween_property(spr_intact, "modulate:a", 0.0, 0.4)
+
+func _get_room_number() -> int:
+	var lower_name = room_name.to_lower()
+	var path = scene_file_path.to_lower()
+	if "room_1" in path or "1" in lower_name or "tutorial" in lower_name or "training" in lower_name:
+		return 1
+	if "room_2" in path or "2" in lower_name or "icy" in lower_name or "frozen" in lower_name:
+		return 2
+	if "room_3" in path or "3" in lower_name or "faster" in lower_name or "accelerated" in lower_name:
+		return 3
+	if "room_4" in path or "4" in lower_name or "director" in lower_name or "inverted" in lower_name:
+		return 4
+	if "room_5" in path or "5" in lower_name or "boss" in lower_name or "throne" in lower_name:
+		return 5
+	return 1
+
+func _get_chest_spawn_position() -> Vector2:
+	return Vector2(0, -50)
+
+func _build_treasure_chest(env: Node2D) -> void:
+	if get_node_or_null("TreasureChest") or env.get_node_or_null("TreasureChest"):
+		return
+	var chest_scene = null
+	for cp in ["res://scenes/treasure_chest.tscn", "res://Scenes/treasure_chest.tscn"]:
+		if ResourceLoader.exists(cp):
+			chest_scene = load(cp)
+			break
+	if not chest_scene:
+		return
+	var chest = chest_scene.instantiate()
+	chest.name = "TreasureChest"
+	if "room_number" in chest:
+		chest.room_number = _get_room_number()
+	chest.position = _get_chest_spawn_position()
+	if "is_locked" in chest:
+		chest.is_locked = true
+	env.add_child(chest)
+	_room_chest = chest
+

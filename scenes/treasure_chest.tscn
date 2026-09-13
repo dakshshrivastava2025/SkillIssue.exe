@@ -1,11 +1,11 @@
-[gd_scene format=3 uid="uid://chest001"]
+[gd_scene load_steps=5 format=3 uid="uid://chest001"]
 
 [ext_resource type="Script" path="res://scripts/objects/treasure_chest.gd" id="1_chest_script"]
 [ext_resource type="Texture2D" path="res://assets/treasure-chest.png" id="2_chest_tex"]
 [ext_resource type="AudioStream" path="res://assets/treasure-open.wav" id="3_chest_sfx"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_chest"]
-radius = 48.0
+radius = 42.0
 
 [node name="TreasureChest" type="Area2D"]
 collision_layer = 1
@@ -13,7 +13,7 @@ collision_mask = 2
 script = ExtResource("1_chest_script")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(1.5, 1.5)
+scale = Vector2(1.4, 1.4)
 texture = ExtResource("2_chest_tex")
 hframes = 2
 vframes = 1
@@ -28,16 +28,20 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -140.0
-offset_top = -55.0
-offset_right = 140.0
-offset_bottom = -30.0
+offset_left = -160.0
+offset_top = -52.0
+offset_right = 160.0
+offset_bottom = -28.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_colors/font_color = Color(1, 0.9, 0.3, 1)
+theme_override_colors/font_color = Color(1, 0.9, 0.35, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-text = "[LOCKED] Defeat the Boss"
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "[LOCKED] Clear all enemies to unlock"
 horizontal_alignment = 1
 
 [node name="SFXOpen" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("3_chest_sfx")
+volume_db = -2.0

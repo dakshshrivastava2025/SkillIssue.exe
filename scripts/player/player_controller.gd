@@ -30,6 +30,8 @@ var current_health: float:
 	set(value):
 		_current_hp = value
 
+var damage_resistance: float = 0.0 # 0.0 to 1.0 (e.g. 0.35 = 35% less damage taken)
+
 var _current_hp: float = 100.0
 
 # Direction & Animation
@@ -98,6 +100,7 @@ func reset_state() -> void:
 	is_attacking = false
 	_is_on_ice = false
 	_ice_drift = Vector2.ZERO
+	damage_resistance = 0.0
 	attack_cooldown = 0.0
 	_current_hp = max_health
 	health_changed.emit(_current_hp, max_health)
@@ -371,22 +374,54 @@ func apply_ice_effect(friction: float) -> void:
 func unlock_ability(ability_name: String) -> void:
 	unlocked_abilities[ability_name] = true
 	match ability_name:
-		"attack_boost":
-			attack_damage += 15.0
+		"attack_boost", "strength_buff":
+			attack_damage += 12.0
+			_flash_buff(Color(1.5, 0.4, 0.4, 1.0))
+			print("[Player] Strength buff applied! Attack damage is now %.1f" % attack_damage)
+		"resistance_buff", "frost_resistance":
+			damage_resistance = clamp(damage_resistance + 0.35, 0.0, 0.75)
+			_flash_buff(Color(0.4, 0.8, 2.0, 1.0))
+			print("[Player] Resistance buff applied! Incoming damage reduced by %.0f%%" % (damage_resistance * 100.0))
 		"health_boost":
 			max_health += 50.0
 			_current_hp = max_health
 			health_changed.emit(_current_hp, max_health)
+			_flash_buff(Color(0.4, 2.0, 0.6, 1.0))
+		"health_and_resistance":
+			max_health += 50.0
+			_current_hp = max_health
+			damage_resistance = clamp(damage_resistance + 0.15, 0.0, 0.75)
+			health_changed.emit(_current_hp, max_health)
+			_flash_buff(Color(1.8, 1.8, 0.4, 1.0))
 		"speed_boots":
-			speed += 60.0
+			speed += 50.0
+			attack_damage += 8.0
+			_flash_buff(Color(1.2, 1.8, 0.4, 1.0))
 	ability_unlocked.emit(ability_name)
+
+func _flash_buff(tint: Color) -> void:
+	if anim_sprite:
+		anim_sprite.modulate = tint
+	else:
+		modulate = tint
+	await get_tree().create_timer(0.35).timeout
+	if anim_sprite:
+		anim_sprite.modulate = Color.WHITE
+	else:
+		modulate = Color.WHITE
 
 func take_damage(amount: float) -> void:
 	if invulnerable or is_dead or _current_hp <= 0.0:
 		return
-	_current_hp = max(0.0, _current_hp - amount)
+	var final_damage = amount * (1.0 - damage_resistance)
+	_current_hp = max(0.0, _current_hp - final_damage)
 	health_changed.emit(_current_hp, max_health)
-	print("[Player] Took %.1f damage! HP: %.1f/%.1f" % [amount, _current_hp, max_health])
+	if damage_resistance > 0.0:
+		print("[Player] Took %.1f damage (reduced from %.1f by %.0f%% resistance)! HP: %.1f/%.1f" % [
+			final_damage, amount, damage_resistance * 100.0, _current_hp, max_health
+		])
+	else:
+		print("[Player] Took %.1f damage! HP: %.1f/%.1f" % [final_damage, _current_hp, max_health])
 	
 	if sfx_hit and sfx_hit.stream:
 		sfx_hit.play()

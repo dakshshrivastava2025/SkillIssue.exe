@@ -163,7 +163,7 @@ func _on_rhythm() -> void:
 # ---------------------------------------------------------------------------
 
 func _get_zombie_scene() -> PackedScene:
-	var paths = ["res://Scenes/enemies/zombie.tscn", "res://scenes/enemies/Zombie.tscn", "res://Scenes/enemies/Zombie.tscn"]
+	var paths = ["res://scenes/enemies/zombie.tscn", "res://Scenes/enemies/zombie.tscn", "res://scenes/enemies/Zombie.tscn", "res://Scenes/enemies/Zombie.tscn"]
 	for p in paths:
 		if ResourceLoader.exists(p):
 			return load(p)

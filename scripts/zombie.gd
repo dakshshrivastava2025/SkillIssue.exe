@@ -49,21 +49,27 @@ func _ready() -> void:
 	add_child(col)
 
 func _resolve_enemy_type() -> void:
-	if texture_path == "":
-		return
-	if "skeleton_knight" in texture_path or "armored" in texture_path:
+	if "skeleton_knight" in texture_path or "armored" in texture_path or enemy_type == "armored_skeleton":
 		enemy_type = "armored_skeleton"
-	elif "skeleton" in texture_path:
+	elif "skeleton" in texture_path or enemy_type == "skeleton":
 		enemy_type = "skeleton"
-	elif "cultist" in texture_path:
+	elif "cultist" in texture_path or "witch" in texture_path or enemy_type == "dark_cultist" or enemy_type == "witch":
 		enemy_type = "dark_cultist"
 		is_ranged = true
-	elif "wizard" in texture_path:
+		ranged_range = 320.0
+		ranged_cooldown = 1.8
+		speed = 85.0
+		damage = 14.0
+	elif "wizard" in texture_path or enemy_type == "dark_wizard":
 		enemy_type = "dark_wizard"
 		is_ranged = true
-	elif "gargoyle" in texture_path:
+		ranged_range = 320.0
+		ranged_cooldown = 1.8
+		speed = 75.0
+		damage = 15.0
+	elif "gargoyle" in texture_path or enemy_type == "gargoyle":
 		enemy_type = "gargoyle"
-	elif "goblin" in texture_path:
+	elif "goblin" in texture_path or enemy_type == "goblin":
 		enemy_type = "goblin"
 
 func _setup_visuals() -> void:
@@ -302,10 +308,16 @@ func _perform_ranged_attack(to_target: Vector2) -> void:
 	if proj_script:
 		var proj = Area2D.new()
 		proj.set_script(proj_script)
-		proj.global_position = global_position + to_target.normalized() * 18.0
-		var ptype = "bomb" if enemy_type == "dark_cultist" else ("magic" if enemy_type == "dark_wizard" else "spear")
-		proj.setup(to_target, 200.0, damage * 0.7, ptype)
-		get_tree().current_scene.add_child(proj)
+		var ptype = "magic" if (enemy_type == "dark_cultist" or enemy_type == "dark_wizard") else "spear"
+		proj.setup(to_target, 240.0, damage, ptype)
+		var spawn_pos = global_position + to_target.normalized() * 24.0
+		var p_room = get_parent()
+		if p_room and is_instance_valid(p_room):
+			p_room.add_child(proj)
+		else:
+			get_tree().current_scene.add_child(proj)
+		proj.global_position = spawn_pos
+		print("[%s] Fired %s projectile at player!" % [enemy_type, ptype])
 
 func _separation_vector() -> Vector2:
 	var force = Vector2.ZERO

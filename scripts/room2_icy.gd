@@ -63,7 +63,7 @@ func _spawn_enemies() -> void:
 	if not ZombieScene:
 		return
 	var count = randi_range(3, 6)
-	var pool = ["res://assets/skeleton.png", "res://assets/goblin_spear.png", "res://assets/skeleton_knight.png"]
+	var pool = ["res://assets/skeleton.png", "res://assets/goblin_spear.png", "res://assets/skeleton_knight.png", "res://assets/dark_cultist.png"]
 	for i in range(count):
 		var z = ZombieScene.instantiate()
 		z.speed = randf_range(65.0, 85.0)
