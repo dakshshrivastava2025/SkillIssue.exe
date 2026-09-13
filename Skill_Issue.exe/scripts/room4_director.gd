@@ -64,17 +64,8 @@ func _get_exit_door_position() -> Vector2:
 func _get_exit_door_size() -> Vector2:
 	return Vector2(140, 140)
 
-func _get_exit_prompt_text() -> String:
-	return "▼ JUMP DOWN INTO THE ABYSS ▼"
-
-func _should_show_portal_glow() -> bool:
-	return false  # Level 4 uses a jump-down grill — no glowing portal rectangle
-
 func _should_block_exit_until_cleared() -> bool:
 	return true  # Grill physically blocks player and mobs until room is cleared
-
-func _get_cleared_banner_text() -> String:
-	return "☠ Grill broken! Jump down to face the Boss ☠"
 
 func _physics_process(_delta: float) -> void:
 	if _player_on_ice and _player_ref and _player_ref.has_method("apply_ice_effect"):

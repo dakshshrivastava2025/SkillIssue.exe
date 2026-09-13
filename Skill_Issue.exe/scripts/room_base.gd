@@ -16,8 +16,6 @@ var _room_active: bool = false
 var _is_cleared: bool = false
 var _last_locked_warning_time: float = -10.0
 
-var _gate_glow: Node2D = null
-var _door_prompt: Label = null
 var _locked_sfx: AudioStreamPlayer = null
 var _unlock_sfx: AudioStreamPlayer = null
 var _door_overlay: Node2D = null  # Holds animated door-open sprites
@@ -211,71 +209,6 @@ func _build_exit_door(env: Node2D) -> void:
 	var d_size = _get_exit_door_size()
 	shape.size = d_size
 	col.shape = shape
-	door.add_child(col)
-	
-	# Visual unlocked gate glow effect node
-	_gate_glow = Node2D.new()
-	_gate_glow.name = "GateGlow"
-	_gate_glow.position = Vector2.ZERO
-	_gate_glow.visible = false
-	_gate_glow.z_as_relative = false
-	_gate_glow.z_index = 3
-	
-	# Glowing light effect in the box on the floor (only for portal-style exits)
-	if _should_show_portal_glow():
-		# Use Polygon2D (a true Node2D) instead of ColorRect (a Control node)
-		# so z_index is respected correctly in world space.
-		var hw = d_size.x / 2.0
-		var hh = d_size.y / 2.0
-
-		# Outer halo — slightly larger, more transparent
-		var halo_poly = Polygon2D.new()
-		halo_poly.name = "GlowHalo"
-		halo_poly.polygon = PackedVector2Array([
-			Vector2(-hw - 8, -hh - 8), Vector2(hw + 8, -hh - 8),
-			Vector2(hw + 8,  hh + 8),  Vector2(-hw - 8, hh + 8)
-		])
-		halo_poly.color = Color(0.1, 0.7, 0.65, 0.25)
-		_gate_glow.add_child(halo_poly)
-
-		# Inner fill — vibrant cyan/emerald portal shimmer
-		var glow_poly = Polygon2D.new()
-		glow_poly.name = "GlowRect"
-		glow_poly.polygon = PackedVector2Array([
-			Vector2(-hw, -hh), Vector2(hw, -hh),
-			Vector2(hw,  hh),  Vector2(-hw, hh)
-		])
-		glow_poly.color = Color(0.15, 0.95, 0.8, 0.55)
-		_gate_glow.add_child(glow_poly)
-
-		# Border using Line2D
-		var border_line = Line2D.new()
-		border_line.name = "GlowBorder"
-		border_line.width = 3.0
-		border_line.default_color = Color(0.5, 1.0, 0.92, 1.0)
-		border_line.closed = true
-		border_line.points = PackedVector2Array([
-			Vector2(-hw, -hh), Vector2(hw, -hh),
-			Vector2(hw,  hh),  Vector2(-hw, hh)
-		])
-		_gate_glow.add_child(border_line)
-	
-	# Door prompt label - positioned above the exit area
-	_door_prompt = Label.new()
-	_door_prompt.name = "DoorPrompt"
-	_door_prompt.text = _get_exit_prompt_text()
-	_door_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_door_prompt.position = Vector2(-150, -d_size.y / 2.0 - 55)
-	_door_prompt.size = Vector2(300, 30)
-	_door_prompt.add_theme_color_override("font_color", Color(1.0, 0.92, 0.4, 1.0))
-	_door_prompt.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
-	_door_prompt.add_theme_constant_override("shadow_offset_x", 1)
-	_door_prompt.add_theme_constant_override("shadow_offset_y", 1)
-	_door_prompt.z_as_relative = false
-	_door_prompt.z_index = 8
-	_gate_glow.add_child(_door_prompt)
-	
-	door.add_child(_gate_glow)
 	door.body_entered.connect(_on_door_entered)
 	door.z_as_relative = false
 	door.z_index = 3
@@ -358,10 +291,9 @@ func _on_door_entered(body: Node) -> void:
 		var current_time = Time.get_ticks_msec() / 1000.0
 		if current_time - _last_locked_warning_time > 1.5:
 			_last_locked_warning_time = current_time
-			print("[%s] North Gate is locked! Defeat all enemies first." % room_name)
+			print("[%s] Exit is locked! Defeat all enemies first." % room_name)
 			if _locked_sfx and is_instance_valid(_locked_sfx):
 				_locked_sfx.play()
-			_show_temporary_banner("🔒 Gate is locked! Defeat all monsters to open.")
 
 func _spawn_statues(env: Node2D) -> void:
 	var statue_script = load("res://scripts/gargoyle_statue.gd")
@@ -423,18 +355,9 @@ func _get_exit_door_position() -> Vector2:
 func _get_exit_door_size() -> Vector2:
 	return Vector2(160, 65)
 
-## Prompt text for the exit. Override in subclasses.
-func _get_exit_prompt_text() -> String:
-	return "▲ EXIT TO NEXT FLOOR ▲"
-
 ## Override to customise where the player spawns when entering this room.
 func _get_player_spawn_position() -> Vector2:
 	return Vector2(0, 150)
-
-## Override to return false if this room's exit should NOT show a glowing portal rectangle.
-## Useful for jump-down / environmental exits (e.g. Room 4 broken grill).
-func _should_show_portal_glow() -> bool:
-	return true
 
 ## Override to return true if a physical solid collider should block the exit area until cleared.
 ## Blocks both the player and all mobs on Layer 1.
@@ -444,10 +367,6 @@ func _should_block_exit_until_cleared() -> bool:
 ## Override to return false if this room should NOT build archway side tunnels (e.g. Room 5 Boss Arena).
 func _should_have_archway_tunnels() -> bool:
 	return true
-
-## Override to customise the banner shown when the room is cleared.
-func _get_cleared_banner_text() -> String:
-	return "✨ North Gate Unlocked! Step into the portal →"
 
 # ---------------------------------------------------------------------------
 # Override in subclasses
@@ -494,22 +413,8 @@ func _on_room_cleared() -> void:
 	if _unlock_sfx and is_instance_valid(_unlock_sfx):
 		_unlock_sfx.play()
 
-	# Animate door opening
+	# Animate door opening (if room has door overlays)
 	_animate_door_opening()
-
-	if _gate_glow and is_instance_valid(_gate_glow):
-		_gate_glow.visible = true
-		if _should_show_portal_glow():
-			# Pulsing animation on the portal glow
-			var tween = create_tween().set_loops()
-			tween.tween_property(_gate_glow, "modulate:a", 0.4, 0.6)
-			tween.tween_property(_gate_glow, "modulate:a", 1.0, 0.6)
-
-	_show_temporary_banner(_get_cleared_banner_text(), 4.0)
-
-	var prompt = get_node_or_null("PromptLabel")
-	if prompt and prompt is Label:
-		prompt.text = "All enemies defeated! Proceed through North Gate →"
 
 	# Check if player is already standing in the exit portal (distance-based, since
 	# get_overlapping_bodies() requires a physics step to be reliable)
