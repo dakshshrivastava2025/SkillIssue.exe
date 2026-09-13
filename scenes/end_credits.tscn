@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://endcredits001"]
+[gd_scene format=3 uid="uid://rxg6cgaal5aa"]
 
 [ext_resource type="Script" path="res://scripts/ui/end_credits.gd" id="1_credits_script"]
 
