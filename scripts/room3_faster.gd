@@ -128,3 +128,12 @@ func _spawn_pos(i: int) -> Vector2:
 	if pts and pts.get_child_count() > i:
 		return pts.get_child(i).global_position
 	return SPAWN_FALLBACK[i % SPAWN_FALLBACK.size()] + global_position
+
+func _get_statue_positions() -> Array[Vector2]:
+	return [
+		Vector2(-260, -120), # Top-Left inside fence corner
+		Vector2( 260, -120), # Top-Right inside fence corner
+		Vector2(-260,  130), # Bottom-Left inside fence corner
+		Vector2( 260,  130)  # Bottom-Right inside fence corner
+	]
+

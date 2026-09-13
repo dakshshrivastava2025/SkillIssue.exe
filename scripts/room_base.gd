@@ -315,6 +315,14 @@ func _on_door_entered(body: Node) -> void:
 func _should_have_statues() -> bool:
 	return true
 
+func _get_statue_positions() -> Array[Vector2]:
+	return [
+		Vector2(-500, -250), # Top-Left Corner
+		Vector2(500, -250),  # Top-Right Corner
+		Vector2(-500, 240),  # Bottom-Left Corner
+		Vector2(500, 240)   # Bottom-Right Corner
+	]
+
 func _spawn_statues(env: Node2D) -> void:
 	if not _should_have_statues():
 		return
@@ -322,13 +330,7 @@ func _spawn_statues(env: Node2D) -> void:
 	if not statue_script:
 		return
 
-	# Genuine 4 room corners inside the dungeon walls
-	var pos_list = [
-		Vector2(-500, -250), # Top-Left Corner
-		Vector2(500, -250),  # Top-Right Corner
-		Vector2(-500, 240),  # Bottom-Left Corner
-		Vector2(500, 240)   # Bottom-Right Corner
-	]
+	var pos_list = _get_statue_positions()
 	for p in pos_list:
 		var statue = CharacterBody2D.new()
 		statue.set_script(statue_script)
