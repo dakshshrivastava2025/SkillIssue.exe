@@ -65,6 +65,7 @@ var unlocked_abilities = {
 	"health_boost": false,
 	"speed_boots": false
 }
+var active_buffs: Array[String] = []
 
 # Node references
 @onready var anim_sprite: AnimatedSprite2D = get_node_or_null("AnimatedSprite2D")
@@ -101,6 +102,10 @@ func reset_state() -> void:
 	_is_on_ice = false
 	_ice_drift = Vector2.ZERO
 	damage_resistance = 0.0
+	attack_damage = 10.0
+	speed = 130.0
+	max_health = 100.0
+	active_buffs.clear()
 	attack_cooldown = 0.0
 	_current_hp = max_health
 	health_changed.emit(_current_hp, max_health)
@@ -375,29 +380,78 @@ func unlock_ability(ability_name: String) -> void:
 	unlocked_abilities[ability_name] = true
 	match ability_name:
 		"attack_boost", "strength_buff":
-			attack_damage += 12.0
+			attack_damage += 8.0
+			if not "strength_buff" in active_buffs:
+				active_buffs.append("strength_buff")
 			_flash_buff(Color(1.5, 0.4, 0.4, 1.0))
 			print("[Player] Strength buff applied! Attack damage is now %.1f" % attack_damage)
 		"resistance_buff", "frost_resistance":
-			damage_resistance = clamp(damage_resistance + 0.35, 0.0, 0.75)
+			damage_resistance = clamp(damage_resistance + 0.20, 0.0, 0.60)
+			if not "resistance_buff" in active_buffs:
+				active_buffs.append("resistance_buff")
 			_flash_buff(Color(0.4, 0.8, 2.0, 1.0))
 			print("[Player] Resistance buff applied! Incoming damage reduced by %.0f%%" % (damage_resistance * 100.0))
-		"health_boost":
-			max_health += 50.0
-			_current_hp = max_health
-			health_changed.emit(_current_hp, max_health)
-			_flash_buff(Color(0.4, 2.0, 0.6, 1.0))
-		"health_and_resistance":
-			max_health += 50.0
-			_current_hp = max_health
-			damage_resistance = clamp(damage_resistance + 0.15, 0.0, 0.75)
-			health_changed.emit(_current_hp, max_health)
-			_flash_buff(Color(1.8, 1.8, 0.4, 1.0))
 		"speed_boots":
-			speed += 50.0
-			attack_damage += 8.0
+			speed += 35.0
+			if not "speed_boots" in active_buffs:
+				active_buffs.append("speed_boots")
 			_flash_buff(Color(1.2, 1.8, 0.4, 1.0))
+			print("[Player] Speed buff applied! Movement speed is now %.1f" % speed)
+		"health_boost", "health_buff":
+			max_health += 20.0
+			_current_hp = max_health
+			health_changed.emit(_current_hp, max_health)
+			if not "health_buff" in active_buffs:
+				active_buffs.append("health_buff")
+			_flash_buff(Color(0.4, 2.0, 0.6, 1.0))
+			print("[Player] Health buff applied! Max HP is now %.1f" % max_health)
+		"health_and_resistance":
+			max_health += 20.0
+			_current_hp = max_health
+			health_changed.emit(_current_hp, max_health)
+			if not "health_buff" in active_buffs:
+				active_buffs.append("health_buff")
+			_flash_buff(Color(1.8, 1.8, 0.4, 1.0))
 	ability_unlocked.emit(ability_name)
+
+## Called by Boss on a 40% hit chance to strip/shatter one of the player's buffs
+func remove_random_buff() -> bool:
+	if active_buffs.is_empty():
+		return false
+	
+	var chosen_buff = active_buffs.pick_random()
+	active_buffs.erase(chosen_buff)
+	unlocked_abilities.erase(chosen_buff)
+	
+	var message = ""
+	match chosen_buff:
+		"strength_buff", "attack_boost":
+			attack_damage = max(10.0, attack_damage - 8.0)
+			message = "⚠️ CURSE: Boss shattered your STRENGTH BUFF! (-8 Attack Damage)"
+			print("[Player] Boss stripped strength buff! Attack damage is now %.1f" % attack_damage)
+		"resistance_buff", "frost_resistance":
+			damage_resistance = max(0.0, damage_resistance - 0.20)
+			message = "⚠️ CURSE: Boss shattered your RESISTANCE BUFF! (Lost 20% Resistance)"
+			print("[Player] Boss stripped resistance buff! Resistance is now %.0f%%" % (damage_resistance * 100.0))
+		"speed_boots":
+			speed = max(130.0, speed - 35.0)
+			message = "⚠️ CURSE: Boss drained your SPEED BUFF! (-35 Movement Speed)"
+			print("[Player] Boss stripped speed buff! Movement speed is now %.1f" % speed)
+		"health_buff", "health_boost":
+			max_health = max(100.0, max_health - 20.0)
+			_current_hp = min(_current_hp, max_health)
+			health_changed.emit(_current_hp, max_health)
+			message = "⚠️ CURSE: Boss drained your VITALITY BUFF! (-20 Max HP)"
+			print("[Player] Boss stripped health buff! Max HP is now %.1f" % max_health)
+
+	_flash_curse()
+
+	# Director HUD toast
+	var ai = get_node_or_null("/root/AIDirector")
+	if ai and ai.has_signal("director_intervention_triggered"):
+		ai.director_intervention_triggered.emit("curse", message)
+	
+	return true
 
 func _flash_buff(tint: Color) -> void:
 	if anim_sprite:
@@ -405,10 +459,23 @@ func _flash_buff(tint: Color) -> void:
 	else:
 		modulate = tint
 	await get_tree().create_timer(0.35).timeout
+	if is_instance_valid(self):
+		if anim_sprite:
+			anim_sprite.modulate = Color.WHITE
+		else:
+			modulate = Color.WHITE
+
+func _flash_curse() -> void:
 	if anim_sprite:
-		anim_sprite.modulate = Color.WHITE
+		anim_sprite.modulate = Color(1.8, 0.2, 2.2, 1.0)
 	else:
-		modulate = Color.WHITE
+		modulate = Color(1.8, 0.2, 2.2, 1.0)
+	await get_tree().create_timer(0.45).timeout
+	if is_instance_valid(self):
+		if anim_sprite:
+			anim_sprite.modulate = Color.WHITE
+		else:
+			modulate = Color.WHITE
 
 func take_damage(amount: float) -> void:
 	if invulnerable or is_dead or _current_hp <= 0.0:

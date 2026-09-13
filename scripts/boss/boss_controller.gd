@@ -291,9 +291,16 @@ func take_damage(amount: int) -> void:
 	if current_state == State.TELEGRAPH_MELEE:
 		state_timer += 0.15 # Brief hit-flinch window
 		
+	# 40% chance when boss takes damage to shatter / strip one of player's buffs
+	if randf() < 0.40:
+		var player = get_tree().get_first_node_in_group("player")
+		if player and is_instance_valid(player) and player.has_method("remove_random_buff"):
+			player.remove_random_buff()
+
 	sprite.modulate = Color(2.5, 0.1, 0.1, 1.0)
 	await get_tree().create_timer(0.12).timeout
-	sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	if is_instance_valid(sprite):
+		sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	
 	if current_health <= 0:
 		boss_defeated.emit()

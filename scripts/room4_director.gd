@@ -216,3 +216,7 @@ func _spawn_pos(i: int) -> Vector2:
 	if pts and pts.get_child_count() > i:
 		return pts.get_child(i).global_position
 	return SPAWN_FALLBACK[i % SPAWN_FALLBACK.size()] + global_position
+
+func _get_chest_spawn_position() -> Vector2:
+	return Vector2(0, -150)
+

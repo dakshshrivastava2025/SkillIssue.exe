@@ -527,7 +527,9 @@ func _get_room_number() -> int:
 	return 1
 
 func _get_chest_spawn_position() -> Vector2:
-	return Vector2(0, -50)
+	if _get_room_number() == 4:
+		return Vector2(0, -150)
+	return Vector2(0, -60)
 
 func _build_treasure_chest(env: Node2D) -> void:
 	if get_node_or_null("TreasureChest") or env.get_node_or_null("TreasureChest"):

@@ -7,31 +7,31 @@ signal chest_opened(reward: Dictionary)
 @export var is_locked: bool = true
 var is_open: bool = false
 
-# Custom room-specific buff configuration
+# Custom room-specific buff configuration (strictly unique per room)
 const ROOM_BUFFS = {
 	1: {
 		"name": "Gladiator's Whetstone",
 		"ability": "strength_buff",
-		"desc": "+12 Attack Damage",
-		"message": "⚔️ STRENGTH BUFF ACQUIRED: +12 Attack Damage!"
+		"desc": "+8 Attack Damage",
+		"message": "⚔️ STRENGTH BUFF ACQUIRED: +8 Attack Damage!"
 	},
 	2: {
 		"name": "Frostbite Aegis",
 		"ability": "resistance_buff",
-		"desc": "+35% Damage Resistance",
-		"message": "🛡️ RESISTANCE BUFF ACQUIRED: Take 35% less damage from all attacks!"
+		"desc": "+20% Damage Resistance",
+		"message": "🛡️ RESISTANCE BUFF ACQUIRED: Take 20% less damage from all attacks!"
 	},
 	3: {
 		"name": "Windstrider Boots",
 		"ability": "speed_boots",
-		"desc": "+50 Movement Speed & +8 Damage",
-		"message": "⚡ AGILITY BUFF ACQUIRED: +50 Movement Speed & +8 Damage!"
+		"desc": "+35 Movement Speed",
+		"message": "⚡ AGILITY BUFF ACQUIRED: +35 Movement Speed!"
 	},
 	4: {
 		"name": "Titan's Heart",
-		"ability": "health_and_resistance",
-		"desc": "+50 Max HP, Full Heal & +15% Resistance",
-		"message": "💖 VITALITY BUFF ACQUIRED: +50 Max HP, Full Heal & +15% Resistance!"
+		"ability": "health_buff",
+		"desc": "+20 Max HP & Full Heal",
+		"message": "💖 VITALITY BUFF ACQUIRED: +20 Max HP & Full Heal!"
 	},
 	5: {
 		"name": "Crown of the Dungeon Conqueror",
