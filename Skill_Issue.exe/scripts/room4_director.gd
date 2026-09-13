@@ -43,6 +43,39 @@ func _get_theme_floor_color() -> Color:
 func _get_room_bg_path() -> String:
 	return "res://assets/room4_bg.png"
 
+func _get_door_intact_path() -> String:
+	return "res://assets/room4_grill_intact.png"
+
+func _get_door_half_open_path() -> String:
+	return "res://assets/room4_grill_breaking.png"
+
+func _get_door_fully_open_path() -> String:
+	return "res://assets/room4_grill_broken.png"
+
+func _get_door_scale() -> Vector2:
+	return Vector2(1.0, 1.0)
+
+func _get_door_position() -> Vector2:
+	return Vector2(0, 47)
+
+func _get_exit_door_position() -> Vector2:
+	return Vector2(0, 47)
+
+func _get_exit_door_size() -> Vector2:
+	return Vector2(140, 140)
+
+func _get_exit_prompt_text() -> String:
+	return "▼ JUMP DOWN INTO THE ABYSS ▼"
+
+func _should_show_portal_glow() -> bool:
+	return false  # Level 4 uses a jump-down grill — no glowing portal rectangle
+
+func _should_block_exit_until_cleared() -> bool:
+	return true  # Grill physically blocks player and mobs until room is cleared
+
+func _get_cleared_banner_text() -> String:
+	return "☠ Grill broken! Jump down to face the Boss ☠"
+
 func _physics_process(_delta: float) -> void:
 	if _player_on_ice and _player_ref and _player_ref.has_method("apply_ice_effect"):
 		_player_ref.apply_ice_effect(0.90)   # Slippier than Room 2
@@ -77,7 +110,11 @@ func _on_aggressive() -> void:
 		"\"Player is aggressive.\"\nSpawning more enemies...", 3.0)
 	for i in range(4):
 		await get_tree().create_timer(0.45).timeout
-		_spawn_zombie(Vector2(randf_range(-250, 250), randf_range(-180, 180)) + global_position, 95.0)
+		var spawn_offset = Vector2(randf_range(-260, 260), randf_range(-190, 190))
+		# Keep spawns away from the central grill at (0, 47)
+		if spawn_offset.distance_to(Vector2(0, 47)) < 110.0:
+			spawn_offset.x += 140.0 * (1.0 if spawn_offset.x >= 0 else -1.0)
+		_spawn_zombie(spawn_offset + global_position, 95.0)
 
 func _on_retreater() -> void:
 	await _show_director_message(
@@ -94,7 +131,10 @@ func _on_dodge_pattern(direction: String) -> void:
 	}
 	var off: Vector2 = offset_map.get(direction, Vector2.ZERO)
 	if _player_ref:
-		_spawn_zombie(_player_ref.global_position + off, 100.0)
+		var target_pos = _player_ref.global_position + off
+		if (target_pos - global_position).distance_to(Vector2(0, 47)) < 100.0:
+			target_pos.x += 120.0
+		_spawn_zombie(target_pos, 100.0)
 
 func _on_rhythm() -> void:
 	await _show_director_message(

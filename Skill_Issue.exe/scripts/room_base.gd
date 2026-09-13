@@ -1,9 +1,10 @@
 extends Node2D
 ## RoomBase — Base class for all rooms.
 ##
-## Handles the enemy lifecycle:
+## Handles the enemy lifecycle & room progression:
 ##   1. Room is entered  → _apply_director_modifiers() then _spawn_enemies()
-##   2. All enemies die  → emit room_completed signal
+##   2. All enemies die  → North exit gate unlocks with sound & visual cue
+##   3. Player enters North gate → emit room_completed signal to transition to next level
 ##
 ## Subclass each room and override _spawn_enemies() and _apply_director_modifiers().
 
@@ -12,9 +13,20 @@ signal room_completed
 var room_name: String = "Base Room"
 var _enemies: Array[Node] = []
 var _room_active: bool = false
+var _is_cleared: bool = false
+var _last_locked_warning_time: float = -10.0
+
+var _gate_glow: Node2D = null
+var _door_prompt: Label = null
+var _locked_sfx: AudioStreamPlayer = null
+var _unlock_sfx: AudioStreamPlayer = null
+var _door_overlay: Node2D = null  # Holds animated door-open sprites
+var _door_blocker: StaticBody2D = null  # Solid collision barrier blocking exit until cleared
+var _door_blocker_col: CollisionShape2D = null
 
 func _ready() -> void:
 	_room_active = true
+	_is_cleared = false
 	_ensure_camera()
 	_ensure_player()
 	_build_environment()
@@ -38,17 +50,32 @@ func _ensure_player() -> void:
 		if existing.get_parent() != self:
 			existing.get_parent().remove_child(existing)
 			add_child(existing)
-		existing.position = Vector2(0, 150)
+		existing.position = _get_player_spawn_position()
+		if existing.get("is_dead") or existing.get("health") <= 0.0:
+			if existing.has_method("reset_state"):
+				existing.reset_state()
 		return
 
-	# First time: create the player
-	var player_script = load("res://scripts/player.gd")
-	if player_script:
-		var p = CharacterBody2D.new()
+	# First time: create the player from player.tscn scene if available
+	var player_scene = null
+	for p_path in ["res://Scenes/player.tscn", "res://scenes/player.tscn"]:
+		if ResourceLoader.exists(p_path):
+			player_scene = load(p_path)
+			break
+
+	if player_scene:
+		var p = player_scene.instantiate()
 		p.name = "Player"
-		p.set_script(player_script)
-		p.position = Vector2(0, 150)
+		p.position = _get_player_spawn_position()
 		add_child(p)
+	else:
+		var player_script = load("res://scripts/player.gd")
+		if player_script:
+			var p = CharacterBody2D.new()
+			p.name = "Player"
+			p.set_script(player_script)
+			p.position = _get_player_spawn_position()
+			add_child(p)
 
 ## Automatically constructs dungeon environment using res://assets/
 func _build_environment() -> void:
@@ -80,15 +107,17 @@ func _build_environment() -> void:
 			bg_spr.scale = Vector2(1280.0 / float(bg_tex.get_width()), 720.0 / float(bg_tex.get_height()))
 			env.add_child(bg_spr)
 
-	# 3. Perimeter Walls (StaticBody2D colliders)
+	# 3. Perimeter Walls (Solid barrier behind the top gate preventing walking over door frame)
 	var static_body = StaticBody2D.new()
 	static_body.name = "DungeonWalls"
 	
 	var wall_rects = [
-		Rect2(0, -350, 1280, 40), # Top wall
-		Rect2(0, 350, 1280, 40),  # Bottom wall
-		Rect2(-630, 0, 40, 720),  # Left wall
-		Rect2(630, 0, 40, 720),   # Right wall
+		Rect2(-360, -250, 560, 40), # Top-Left wall
+		Rect2(360, -250, 560, 40),  # Top-Right wall
+		Rect2(0, -250, 200, 40),    # Top Gate wall behind door
+		Rect2(0, 350, 1280, 40),    # Bottom wall
+		Rect2(-630, 0, 40, 720),    # Left wall
+		Rect2(630, 0, 40, 720),     # Right wall
 	]
 	
 	for rect in wall_rects:
@@ -101,17 +130,18 @@ func _build_environment() -> void:
 		
 	env.add_child(static_body)
 
-	# 4. Interactive Room Exit Door Trigger (North Door)
+	# 4. Interactive Room Exit Door Trigger (North Door in Blue Box)
 	_build_exit_door(env)
 
-	# 5. Archway Gate Tunnels (Phasing Tunnel Teleporters)
-	_build_archway_tunnels(env)
+	# 5. Archway Gate Tunnels (Phasing Tunnel Teleporters on Left and Right Doors)
+	if _should_have_archway_tunnels():
+		_build_archway_tunnels(env)
 
 	# 6. Gargoyle Statue Traps & Time Punishment Setup
 	_spawn_statues(env)
 	_start_room_timer()
 
-	# 7. Room Entrance Audio
+	# 7. Room Entrance Audio & Gate Audio
 	if ResourceLoader.exists("res://assets/dungeon_discovery.wav"):
 		var sfx = AudioStreamPlayer.new()
 		sfx.stream = load("res://assets/dungeon_discovery.wav")
@@ -119,8 +149,25 @@ func _build_environment() -> void:
 		env.add_child(sfx)
 		sfx.play()
 
+	if ResourceLoader.exists("res://assets/locked_door.wav"):
+		_locked_sfx = AudioStreamPlayer.new()
+		_locked_sfx.stream = load("res://assets/locked_door.wav")
+		_locked_sfx.volume_db = -6.0
+		env.add_child(_locked_sfx)
+
+	if ResourceLoader.exists("res://assets/unlock_door.wav"):
+		_unlock_sfx = AudioStreamPlayer.new()
+		_unlock_sfx.stream = load("res://assets/unlock_door.wav")
+		_unlock_sfx.volume_db = -4.0
+		env.add_child(_unlock_sfx)
+	elif ResourceLoader.exists("res://assets/bars_open.wav"):
+		_unlock_sfx = AudioStreamPlayer.new()
+		_unlock_sfx.stream = load("res://assets/bars_open.wav")
+		_unlock_sfx.volume_db = -4.0
+		env.add_child(_unlock_sfx)
+
 func _build_archway_tunnels(env: Node2D) -> void:
-	# Tunnel 1 (Left Wall)
+	# Tunnel 1 (Left Wall Open Doorway)
 	var tunnel1 = Area2D.new()
 	tunnel1.name = "Tunnel1"
 	tunnel1.position = Vector2(-540, 0)
@@ -132,7 +179,7 @@ func _build_archway_tunnels(env: Node2D) -> void:
 	tunnel1.body_entered.connect(_phase_teleport.bind(Vector2(480, 0)))
 	env.add_child(tunnel1)
 
-	# Tunnel 2 (Right Wall)
+	# Tunnel 2 (Right Wall Open Doorway)
 	var tunnel2 = Area2D.new()
 	tunnel2.name = "Tunnel2"
 	tunnel2.position = Vector2(540, 0)
@@ -145,31 +192,176 @@ func _build_archway_tunnels(env: Node2D) -> void:
 	env.add_child(tunnel2)
 
 func _phase_teleport(body: Node, target_pos: Vector2) -> void:
-	if body.is_in_group("player") or body.is_in_group("enemy"):
+	if body.is_in_group("boss") or body.name == "BossEnemy" or body.name.begins_with("Boss"):
+		return
+	if body.is_in_group("player") or (body.is_in_group("enemy") and not body.is_in_group("boss")):
 		body.global_position = target_pos + global_position
 		print("[Tunnel] %s phased through Archway Tunnel!" % body.name)
 
 func _build_exit_door(env: Node2D) -> void:
 	var door = Area2D.new()
 	door.name = "ExitDoorArea"
-	door.position = Vector2(0, -330)
+	door.position = _get_exit_door_position()
+	# Must detect player (collision layer 2) and walls (layer 1)
+	door.collision_layer = 0
+	door.collision_mask = 2  # player is on layer 2
 	
 	var col = CollisionShape2D.new()
 	var shape = RectangleShape2D.new()
-	shape.size = Vector2(120, 60)
+	var d_size = _get_exit_door_size()
+	shape.size = d_size
 	col.shape = shape
 	door.add_child(col)
 	
+	# Visual unlocked gate glow effect node
+	_gate_glow = Node2D.new()
+	_gate_glow.name = "GateGlow"
+	_gate_glow.position = Vector2.ZERO
+	_gate_glow.visible = false
+	_gate_glow.z_as_relative = false
+	_gate_glow.z_index = 3
+	
+	# Glowing light effect in the box on the floor (only for portal-style exits)
+	if _should_show_portal_glow():
+		# Use Polygon2D (a true Node2D) instead of ColorRect (a Control node)
+		# so z_index is respected correctly in world space.
+		var hw = d_size.x / 2.0
+		var hh = d_size.y / 2.0
+
+		# Outer halo — slightly larger, more transparent
+		var halo_poly = Polygon2D.new()
+		halo_poly.name = "GlowHalo"
+		halo_poly.polygon = PackedVector2Array([
+			Vector2(-hw - 8, -hh - 8), Vector2(hw + 8, -hh - 8),
+			Vector2(hw + 8,  hh + 8),  Vector2(-hw - 8, hh + 8)
+		])
+		halo_poly.color = Color(0.1, 0.7, 0.65, 0.25)
+		_gate_glow.add_child(halo_poly)
+
+		# Inner fill — vibrant cyan/emerald portal shimmer
+		var glow_poly = Polygon2D.new()
+		glow_poly.name = "GlowRect"
+		glow_poly.polygon = PackedVector2Array([
+			Vector2(-hw, -hh), Vector2(hw, -hh),
+			Vector2(hw,  hh),  Vector2(-hw, hh)
+		])
+		glow_poly.color = Color(0.15, 0.95, 0.8, 0.55)
+		_gate_glow.add_child(glow_poly)
+
+		# Border using Line2D
+		var border_line = Line2D.new()
+		border_line.name = "GlowBorder"
+		border_line.width = 3.0
+		border_line.default_color = Color(0.5, 1.0, 0.92, 1.0)
+		border_line.closed = true
+		border_line.points = PackedVector2Array([
+			Vector2(-hw, -hh), Vector2(hw, -hh),
+			Vector2(hw,  hh),  Vector2(-hw, hh)
+		])
+		_gate_glow.add_child(border_line)
+	
+	# Door prompt label - positioned above the exit area
+	_door_prompt = Label.new()
+	_door_prompt.name = "DoorPrompt"
+	_door_prompt.text = _get_exit_prompt_text()
+	_door_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_door_prompt.position = Vector2(-150, -d_size.y / 2.0 - 55)
+	_door_prompt.size = Vector2(300, 30)
+	_door_prompt.add_theme_color_override("font_color", Color(1.0, 0.92, 0.4, 1.0))
+	_door_prompt.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+	_door_prompt.add_theme_constant_override("shadow_offset_x", 1)
+	_door_prompt.add_theme_constant_override("shadow_offset_y", 1)
+	_door_prompt.z_as_relative = false
+	_door_prompt.z_index = 8
+	_gate_glow.add_child(_door_prompt)
+	
+	door.add_child(_gate_glow)
 	door.body_entered.connect(_on_door_entered)
-	env.add_child(door)
+	door.z_as_relative = false
+	door.z_index = 3
+	add_child(door)
+
+	# Physical door blocker: prevents player and mobs from passing through before room is cleared
+	if _should_block_exit_until_cleared():
+		_door_blocker = StaticBody2D.new()
+		_door_blocker.name = "DoorBlocker"
+		_door_blocker.position = _get_exit_door_position()
+		_door_blocker.collision_layer = 0xFFFFFFFF  # Solid against all collision layers (world, player, mobs)
+		_door_blocker.collision_mask = 0
+		_door_blocker.add_to_group("door_blocker")
+		
+		_door_blocker_col = CollisionShape2D.new()
+		var b_shape = RectangleShape2D.new()
+		b_shape.size = _get_exit_door_size()
+		_door_blocker_col.shape = b_shape
+		_door_blocker.add_child(_door_blocker_col)
+		add_child(_door_blocker)
+
+	# Door opening / breaking animation overlay
+	var intact_path = _get_door_intact_path()
+	var half_path = _get_door_half_open_path()
+	var open_path = _get_door_fully_open_path()
+	var has_overlay = (intact_path != "" and ResourceLoader.exists(intact_path)) or \
+	                  (half_path != "" and ResourceLoader.exists(half_path)) or \
+	                  (open_path != "" and ResourceLoader.exists(open_path))
+
+	if has_overlay:
+		_door_overlay = Node2D.new()
+		_door_overlay.name = "DoorOverlay"
+		_door_overlay.position = _get_door_position()
+		_door_overlay.z_as_relative = false
+		_door_overlay.z_index = 2
+		_door_overlay.visible = (intact_path != "")
+		add_child(_door_overlay)
+
+		if intact_path != "" and ResourceLoader.exists(intact_path):
+			var spr_intact = Sprite2D.new()
+			spr_intact.name = "DoorIntact"
+			spr_intact.texture = load(intact_path)
+			spr_intact.scale = _get_door_scale()
+			spr_intact.position = Vector2.ZERO
+			spr_intact.visible = true
+			_door_overlay.add_child(spr_intact)
+
+		if half_path != "" and ResourceLoader.exists(half_path):
+			var spr_half = Sprite2D.new()
+			spr_half.name = "DoorHalfOpen"
+			spr_half.texture = load(half_path)
+			spr_half.scale = _get_door_scale()
+			spr_half.position = Vector2.ZERO
+			spr_half.visible = (intact_path == "")
+			spr_half.modulate.a = 0.0 if intact_path != "" else 1.0
+			_door_overlay.add_child(spr_half)
+
+		if open_path != "" and ResourceLoader.exists(open_path):
+			var spr_open = Sprite2D.new()
+			spr_open.name = "DoorFullyOpen"
+			spr_open.texture = load(open_path)
+			spr_open.scale = _get_door_scale()
+			spr_open.position = Vector2.ZERO
+			spr_open.modulate.a = 0.0  # Start transparent; fades in after half-open
+			_door_overlay.add_child(spr_open)
 
 func _on_door_entered(body: Node) -> void:
-	if body.is_in_group("player"):
-		if _enemies.is_empty():
-			print("[%s] Player entered exit doorway -> Next room!" % room_name)
-			_on_all_enemies_dead()
-		else:
-			print("[%s] Door locked! Defeat all enemies first." % room_name)
+	if not body.is_in_group("player"):
+		return
+		
+	if _is_cleared:
+		if not _room_active:
+			return
+		_room_active = false
+		print("[%s] Player stepped through North Gate -> Next Level!" % room_name)
+		if _unlock_sfx and is_instance_valid(_unlock_sfx):
+			_unlock_sfx.play()
+		emit_signal("room_completed")
+	else:
+		var current_time = Time.get_ticks_msec() / 1000.0
+		if current_time - _last_locked_warning_time > 1.5:
+			_last_locked_warning_time = current_time
+			print("[%s] North Gate is locked! Defeat all enemies first." % room_name)
+			if _locked_sfx and is_instance_valid(_locked_sfx):
+				_locked_sfx.play()
+			_show_temporary_banner("🔒 Gate is locked! Defeat all monsters to open.")
 
 func _spawn_statues(env: Node2D) -> void:
 	var statue_script = load("res://scripts/gargoyle_statue.gd")
@@ -191,7 +383,7 @@ func _spawn_statues(env: Node2D) -> void:
 
 func _start_room_timer() -> void:
 	await get_tree().create_timer(16.0).timeout
-	if _room_active and not _enemies.is_empty():
+	if _room_active and not _is_cleared and not _enemies.is_empty():
 		print("[RoomBase] ⚠️ TIME IS UP! Gargoyle statues awaken as punishment!")
 		for s in get_tree().get_nodes_in_group("statue"):
 			if s.has_method("awaken"):
@@ -202,6 +394,60 @@ func _get_theme_floor_color() -> Color:
 
 func _get_room_bg_path() -> String:
 	return "res://assets/room1_bg.png"
+
+## Path to an intact/closed door overlay sprite (shown during combat before opening).
+func _get_door_intact_path() -> String:
+	return ""
+
+## Path to the half-open door overlay sprite. Override in subclasses for different doors.
+func _get_door_half_open_path() -> String:
+	return ""
+
+## Path to the fully-open door overlay sprite. Override in subclasses for different doors.
+func _get_door_fully_open_path() -> String:
+	return ""
+
+## Scale for the door overlay sprites. Override in subclasses.
+func _get_door_scale() -> Vector2:
+	return Vector2(1.0, 1.0)
+
+## Position for the door overlay node in local space. Override in subclasses.
+func _get_door_position() -> Vector2:
+	return Vector2(0, -210)
+
+## Position for the exit door area trigger. Override in subclasses (e.g. Room 4 in center).
+func _get_exit_door_position() -> Vector2:
+	return Vector2(0, -195)
+
+## Size for the exit door collision shape. Override in subclasses.
+func _get_exit_door_size() -> Vector2:
+	return Vector2(160, 65)
+
+## Prompt text for the exit. Override in subclasses.
+func _get_exit_prompt_text() -> String:
+	return "▲ EXIT TO NEXT FLOOR ▲"
+
+## Override to customise where the player spawns when entering this room.
+func _get_player_spawn_position() -> Vector2:
+	return Vector2(0, 150)
+
+## Override to return false if this room's exit should NOT show a glowing portal rectangle.
+## Useful for jump-down / environmental exits (e.g. Room 4 broken grill).
+func _should_show_portal_glow() -> bool:
+	return true
+
+## Override to return true if a physical solid collider should block the exit area until cleared.
+## Blocks both the player and all mobs on Layer 1.
+func _should_block_exit_until_cleared() -> bool:
+	return _get_door_intact_path() != ""
+
+## Override to return false if this room should NOT build archway side tunnels (e.g. Room 5 Boss Arena).
+func _should_have_archway_tunnels() -> bool:
+	return true
+
+## Override to customise the banner shown when the room is cleared.
+func _get_cleared_banner_text() -> String:
+	return "✨ North Gate Unlocked! Step into the portal →"
 
 # ---------------------------------------------------------------------------
 # Override in subclasses
@@ -216,7 +462,7 @@ func _apply_director_modifiers() -> void:
 	pass
 
 # ---------------------------------------------------------------------------
-# Enemy tracking
+# Enemy tracking & Gate Unlocking
 # ---------------------------------------------------------------------------
 
 ## Register an enemy so the room tracks its death.
@@ -230,10 +476,117 @@ func register_enemy(enemy: Node) -> void:
 func _on_enemy_died(enemy: Node) -> void:
 	_enemies.erase(enemy)
 	print("[%s] Enemy died. Remaining: %d" % [room_name, _enemies.size()])
-	if _enemies.is_empty() and _room_active:
-		_on_all_enemies_dead()
+	if _enemies.is_empty() and _room_active and not _is_cleared:
+		_on_room_cleared()
 
-func _on_all_enemies_dead() -> void:
-	_room_active = false
-	print("[%s] All enemies dead — room complete!" % room_name)
-	emit_signal("room_completed")
+## Called when all enemies in the room are defeated. Unlocks the North Gate.
+func _on_room_cleared() -> void:
+	_is_cleared = true
+	print("[%s] All enemies defeated! North Gate unlocked." % room_name)
+
+	# Remove physical door blocker so player can pass through / step onto exit
+	if _door_blocker_col and is_instance_valid(_door_blocker_col):
+		_door_blocker_col.set_deferred("disabled", true)
+	if _door_blocker and is_instance_valid(_door_blocker):
+		_door_blocker.queue_free()
+		_door_blocker = null
+
+	if _unlock_sfx and is_instance_valid(_unlock_sfx):
+		_unlock_sfx.play()
+
+	# Animate door opening
+	_animate_door_opening()
+
+	if _gate_glow and is_instance_valid(_gate_glow):
+		_gate_glow.visible = true
+		if _should_show_portal_glow():
+			# Pulsing animation on the portal glow
+			var tween = create_tween().set_loops()
+			tween.tween_property(_gate_glow, "modulate:a", 0.4, 0.6)
+			tween.tween_property(_gate_glow, "modulate:a", 1.0, 0.6)
+
+	_show_temporary_banner(_get_cleared_banner_text(), 4.0)
+
+	var prompt = get_node_or_null("PromptLabel")
+	if prompt and prompt is Label:
+		prompt.text = "All enemies defeated! Proceed through North Gate →"
+
+	# Check if player is already standing in the exit portal (distance-based, since
+	# get_overlapping_bodies() requires a physics step to be reliable)
+	var door = get_node_or_null("ExitDoorArea")
+	if not door:
+		door = get_node_or_null("DungeonEnv/ExitDoorArea")
+	var player = get_tree().get_first_node_in_group("player")
+	if door and player and is_instance_valid(player):
+		var dist = player.global_position.distance_to(door.global_position)
+		if dist < 100.0:
+			_on_door_entered(player)
+
+## Plays a 3-stage door opening animation: closed / intact → breaking / half-open → fully open / broken.
+func _animate_door_opening() -> void:
+	if not _door_overlay or not is_instance_valid(_door_overlay):
+		return
+	var spr_intact = _door_overlay.get_node_or_null("DoorIntact")
+	var spr_half = _door_overlay.get_node_or_null("DoorHalfOpen")
+	var spr_open = _door_overlay.get_node_or_null("DoorFullyOpen")
+	if not spr_intact and not spr_half and not spr_open:
+		return
+
+	# Stage 1 — slight delay for drama after kill, then show half-open / breaking overlay
+	await get_tree().create_timer(0.35).timeout
+	if not is_instance_valid(self):
+		return
+	_door_overlay.visible = true
+
+	if spr_intact and spr_half:
+		spr_half.visible = true
+		var shake = create_tween()
+		shake.tween_property(spr_intact, "position:x", -5.0, 0.05)
+		shake.tween_property(spr_intact, "position:x",  5.0, 0.05)
+		shake.tween_property(spr_intact, "position:x", -3.0, 0.05)
+		shake.tween_property(spr_intact, "position:x",  0.0, 0.05)
+		shake.tween_property(spr_half, "modulate:a", 1.0, 0.25)
+		shake.parallel().tween_property(spr_intact, "modulate:a", 0.0, 0.25)
+	elif spr_half:
+		spr_half.modulate = Color.WHITE
+		var shake_tween = create_tween()
+		shake_tween.tween_property(spr_half, "position:x", -4.0, 0.06)
+		shake_tween.tween_property(spr_half, "position:x",  4.0, 0.06)
+		shake_tween.tween_property(spr_half, "position:x", -3.0, 0.05)
+		shake_tween.tween_property(spr_half, "position:x",  0.0, 0.05)
+
+	# Stage 2 — after a moment, cross-fade to fully open
+	await get_tree().create_timer(0.7).timeout
+	if not is_instance_valid(self):
+		return
+	if spr_open:
+		var fade = create_tween()
+		fade.set_parallel(true)
+		fade.tween_property(spr_open, "modulate:a", 1.0, 0.4)
+		if spr_half:
+			fade.tween_property(spr_half, "modulate:a", 0.0, 0.4)
+		if spr_intact:
+			fade.tween_property(spr_intact, "modulate:a", 0.0, 0.4)
+
+func _show_temporary_banner(text: String, duration: float = 2.5) -> void:
+	var hud = get_tree().get_first_node_in_group("hud")
+	if hud and hud.has_method("show_banner"):
+		hud.show_banner(text)
+		return
+
+	# Fallback banner if HUD doesn't have custom banner method
+	var banner = Label.new()
+	banner.text = text
+	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	banner.position = Vector2(-250, -200)
+	banner.size = Vector2(500, 40)
+	banner.add_theme_color_override("font_color", Color(1.0, 0.95, 0.3, 1.0))
+	banner.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+	banner.add_theme_constant_override("shadow_offset_x", 1)
+	banner.add_theme_constant_override("shadow_offset_y", 1)
+	add_child(banner)
+	
+	var tween = create_tween()
+	tween.tween_interval(duration)
+	tween.tween_property(banner, "modulate:a", 0.0, 0.5)
+	tween.tween_callback(banner.queue_free)

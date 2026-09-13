@@ -29,17 +29,23 @@ func _ready() -> void:
 	load_room(0)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed:
-		if event.keycode == KEY_N or event.keycode == KEY_SPACE:
-			print("[GameManager] Debug: Skipping to next room!")
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_F2:
+			print("[GameManager] Debug (F2): Skipping to next room!")
 			_on_room_completed()
-		elif event.keycode == KEY_K:
-			print("[GameManager] Debug: Killing all enemies in room!")
+		elif event.keycode == KEY_F3:
+			print("[GameManager] Debug (F3): Killing all enemies in room!")
 			for e in get_tree().get_nodes_in_group("enemy"):
 				if e.has_method("_die"):
 					e._die()
 				elif e.has_method("take_damage"):
 					e.take_damage(9999.0)
+		elif event.keycode == KEY_R:
+			print("[GameManager] Restarting current run (R)...")
+			var p = get_tree().get_first_node_in_group("player")
+			if p and is_instance_valid(p) and p.has_method("reset_state"):
+				p.reset_state()
+			load_room(0)
 
 ## Load a room by index (0-4).
 func load_room(index: int) -> void:
@@ -49,6 +55,12 @@ func load_room(index: int) -> void:
 		return
 
 	current_room_index = index
+
+	# If restarting from room 0, ensure player is fully restored
+	if index == 0:
+		var p = get_tree().get_first_node_in_group("player")
+		if p and is_instance_valid(p) and p.has_method("reset_state"):
+			p.reset_state()
 
 	# Clear previous room
 	if _current_room_instance and is_instance_valid(_current_room_instance):
@@ -85,5 +97,15 @@ func _find_room_path(index: int) -> String:
 
 func _on_room_completed() -> void:
 	print("[GameManager] Room %d complete. Next room in 1.5s..." % current_room_index)
+	# Heal player +20 HP on transition if they're hurt (below 75 HP)
+	var p = get_tree().get_first_node_in_group("player")
+	if p and is_instance_valid(p):
+		var current_hp = p.get("_current_hp") if p.get("_current_hp") != null else p.get("health")
+		if current_hp != null and current_hp < 75.0:
+			var healed = min(current_hp + 20.0, p.get("max_health") if p.get("max_health") != null else 100.0)
+			p.set("_current_hp", healed)
+			if p.has_signal("health_changed"):
+				p.emit_signal("health_changed", healed, p.get("max_health") if p.get("max_health") != null else 100.0)
+			print("[GameManager] Player healed +20 HP on room transition → %.1f HP" % healed)
 	await get_tree().create_timer(1.5).timeout
 	load_room(current_room_index + 1)

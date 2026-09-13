@@ -90,19 +90,44 @@ const TRASH_TALK: Dictionary = {
 @onready var dialogue_label: Label       = $DialogueLabel
 @onready var health_bar: ProgressBar     = $HealthBar
 @onready var boss_poly: Polygon2D        = $BossPolygon
+var _hp_bar_fill: ColorRect = null
 
 func _ready() -> void:
 	add_to_group("enemy")
+	add_to_group("boss")
 	health = max_health
 	_target = get_tree().get_first_node_in_group("player")
+	_setup_health_bar()
 
 	if health_bar:
 		health_bar.max_value = max_health
 		health_bar.value     = health
 		health_bar.visible   = false   # Hidden during monologue
+		health_bar.position  = Vector2(-60, -110)
+		health_bar.size      = Vector2(120, 16)
 
-	# Build placeholder visual if BossPolygon doesn't exist
-	if not boss_poly:
+	if dialogue_label:
+		dialogue_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		dialogue_label.position = Vector2(-150, -80)
+		dialogue_label.size     = Vector2(300, 40)
+
+	# Visuals: Use dark_wizard.png if asset exists, otherwise fallback
+	if ResourceLoader.exists("res://assets/dark_wizard.png"):
+		var spr = Sprite2D.new()
+		spr.name = "BossSprite"
+		var tex = load("res://assets/dark_wizard.png") as Texture2D
+		if tex:
+			spr.texture = tex
+			var s: float = 72.0 / float(max(1, tex.get_height()))
+			spr.scale = Vector2(s, s)
+		add_child(spr)
+	elif ResourceLoader.exists("res://assets/wizard_boss/boss-cloak.png"):
+		var spr = Sprite2D.new()
+		spr.name = "BossSprite"
+		spr.texture = load("res://assets/wizard_boss/boss-cloak.png")
+		spr.scale = Vector2(2.0, 2.0)
+		add_child(spr)
+	elif not boss_poly:
 		boss_poly = Polygon2D.new()
 		boss_poly.name = "BossPolygon"
 		boss_poly.polygon = PackedVector2Array([
@@ -281,12 +306,58 @@ func _try_aoe(delta: float) -> void:
 # Damage / Death
 # ---------------------------------------------------------------------------
 
+func _setup_health_bar() -> void:
+	if get_node_or_null("MobHealthBar"):
+		return
+	var bar_root = Node2D.new()
+	bar_root.name = "MobHealthBar"
+	bar_root.position = Vector2(0, -65)
+	bar_root.z_index = 5
+	add_child(bar_root)
+
+	# Background dark box
+	var bg = ColorRect.new()
+	bg.name = "BG"
+	bg.position = Vector2(-32, -3)
+	bg.size = Vector2(64, 6)
+	bg.color = Color(0.06, 0.06, 0.08, 0.9)
+	bar_root.add_child(bg)
+
+	# Border
+	var border = ReferenceRect.new()
+	border.position = Vector2(-32, -3)
+	border.size = Vector2(64, 6)
+	border.border_color = Color(0.3, 0.3, 0.35, 0.9)
+	border.border_width = 1.0
+	border.editor_only = false
+	bar_root.add_child(border)
+
+	# Red Fill
+	_hp_bar_fill = ColorRect.new()
+	_hp_bar_fill.name = "Fill"
+	_hp_bar_fill.position = Vector2(-30, -2)
+	_hp_bar_fill.size = Vector2(60, 4)
+	_hp_bar_fill.color = Color(0.95, 0.18, 0.18, 0.95)
+	bar_root.add_child(_hp_bar_fill)
+
+func _update_health_bar() -> void:
+	if _hp_bar_fill and is_instance_valid(_hp_bar_fill):
+		var ratio = clamp(health / max(1.0, max_health), 0.0, 1.0)
+		_hp_bar_fill.size.x = ratio * 60.0
+
 func take_damage(amount: float) -> void:
 	health -= amount
+	_update_health_bar()
 	if health_bar:
 		health_bar.value = health
 	# Flash
-	if boss_poly:
+	var spr = get_node_or_null("BossSprite")
+	if spr:
+		spr.modulate = Color.RED
+		await get_tree().create_timer(0.07).timeout
+		if is_instance_valid(spr):
+			spr.modulate = Color.WHITE
+	elif boss_poly:
 		boss_poly.color = Color.WHITE
 		await get_tree().create_timer(0.07).timeout
 		if is_instance_valid(boss_poly):

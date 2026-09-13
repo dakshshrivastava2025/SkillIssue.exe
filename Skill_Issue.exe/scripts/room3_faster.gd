@@ -36,6 +36,18 @@ func _get_theme_floor_color() -> Color:
 func _get_room_bg_path() -> String:
 	return "res://assets/room3_bg.png"
 
+func _get_door_half_open_path() -> String:
+	return "res://assets/room3_door_half_open.png"
+
+func _get_door_fully_open_path() -> String:
+	return "res://assets/room3_door_fully_open.png"
+
+func _get_door_scale() -> Vector2:
+	return Vector2(1.0, 1.0)
+
+func _get_door_position() -> Vector2:
+	return Vector2(0, -266)
+
 func _get_zombie_scene() -> PackedScene:
 	var paths = ["res://Scenes/enemies/zombie.tscn", "res://scenes/enemies/Zombie.tscn", "res://Scenes/enemies/Zombie.tscn"]
 	for p in paths:

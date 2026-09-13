@@ -37,6 +37,18 @@ func _ready() -> void:
 func _get_room_bg_path() -> String:
 	return "res://assets/room1_bg.png"
 
+func _get_door_half_open_path() -> String:
+	return "res://assets/door_half_open.png"
+
+func _get_door_fully_open_path() -> String:
+	return "res://assets/door_fully_open.png"
+
+func _get_door_scale() -> Vector2:
+	return Vector2(1.25, 1.25)
+
+func _get_door_position() -> Vector2:
+	return Vector2(0, -210)
+
 func _get_zombie_scene() -> PackedScene:
 	var paths = ["res://Scenes/enemies/zombie.tscn", "res://scenes/enemies/Zombie.tscn", "res://Scenes/enemies/Zombie.tscn"]
 	for p in paths:

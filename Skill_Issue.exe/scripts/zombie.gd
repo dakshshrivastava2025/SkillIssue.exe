@@ -14,6 +14,9 @@ signal died
 @export var melee_range: float = 52.0
 @export var melee_cooldown: float = 1.2
 @export var texture_path: String = ""
+## Delay in seconds between the attack animation starting and damage actually landing.
+## Gives the player a visual cue to react. Set to 0.0 for instant attacks.
+@export var attack_startup_delay: float = 0.3
 
 var health: float = 0.0
 var _target: Node2D = null
@@ -25,6 +28,7 @@ var _facing_dir: String = "down" # "down", "side", "up"
 var _anim_sprite: AnimatedSprite2D = null
 var _single_sprite: Sprite2D = null
 var _knockback: Vector2 = Vector2.ZERO
+var _hp_bar_fill: ColorRect = null
 
 const CELL_SIZE: float = 96.0
 
@@ -34,6 +38,7 @@ func _ready() -> void:
 	_target = get_tree().get_first_node_in_group("player")
 	_resolve_enemy_type()
 	_setup_visuals()
+	_setup_health_bar()
 
 	collision_layer = 2
 	collision_mask = 1
@@ -270,7 +275,12 @@ func _perform_melee_attack(to_target: Vector2) -> void:
 	var aim = to_target.normalized()
 	velocity = aim * 90.0
 	_play_anim("attack")
-	if _target and _target.has_method("take_damage"):
+	# Wait for startup delay before dealing damage (gives player time to react)
+	if attack_startup_delay > 0.0:
+		await get_tree().create_timer(attack_startup_delay).timeout
+		if not is_instance_valid(self):
+			return
+	if _target and is_instance_valid(_target) and _target.has_method("take_damage"):
 		_target.take_damage(damage)
 		if "velocity" in _target:
 			_target.velocity += aim * 120.0
@@ -280,6 +290,11 @@ func _perform_ranged_attack(to_target: Vector2) -> void:
 	_attack_anim_timer = 0.45
 	_attack_timer = ranged_cooldown
 	_play_anim("attack")
+	# Wait for startup delay before firing projectile
+	if attack_startup_delay > 0.0:
+		await get_tree().create_timer(attack_startup_delay).timeout
+		if not is_instance_valid(self):
+			return
 	var proj_script = load("res://scripts/projectile.gd")
 	if proj_script:
 		var proj = Area2D.new()
@@ -298,10 +313,58 @@ func _separation_vector() -> Vector2:
 		var d = diff.length()
 		if d > 0.01 and d < 36.0:
 			force += diff.normalized() * (1.0 - d / 36.0)
+
+	# Actively steer mobs away from the locked door / grill blocker
+	for b in get_tree().get_nodes_in_group("door_blocker"):
+		if is_instance_valid(b):
+			var b_diff = global_position - b.global_position
+			var b_dist = b_diff.length()
+			if b_dist < 110.0 and b_dist > 0.01:
+				force += b_diff.normalized() * (1.0 - b_dist / 110.0) * 4.0
 	return force
+
+func _setup_health_bar() -> void:
+	if get_node_or_null("MobHealthBar"):
+		return
+	var bar_root = Node2D.new()
+	bar_root.name = "MobHealthBar"
+	bar_root.position = Vector2(0, -32)
+	bar_root.z_index = 5
+	add_child(bar_root)
+
+	# Background dark box
+	var bg = ColorRect.new()
+	bg.name = "BG"
+	bg.position = Vector2(-16, -2)
+	bg.size = Vector2(32, 4)
+	bg.color = Color(0.06, 0.06, 0.08, 0.9)
+	bar_root.add_child(bg)
+
+	# Border
+	var border = ReferenceRect.new()
+	border.position = Vector2(-16, -2)
+	border.size = Vector2(32, 4)
+	border.border_color = Color(0.25, 0.25, 0.3, 0.85)
+	border.border_width = 0.8
+	border.editor_only = false
+	bar_root.add_child(border)
+
+	# Red Fill
+	_hp_bar_fill = ColorRect.new()
+	_hp_bar_fill.name = "Fill"
+	_hp_bar_fill.position = Vector2(-15, -1.25)
+	_hp_bar_fill.size = Vector2(30, 2.5)
+	_hp_bar_fill.color = Color(0.95, 0.18, 0.18, 0.95)
+	bar_root.add_child(_hp_bar_fill)
+
+func _update_health_bar() -> void:
+	if _hp_bar_fill and is_instance_valid(_hp_bar_fill):
+		var ratio = clamp(health / max(1.0, max_health), 0.0, 1.0)
+		_hp_bar_fill.size.x = ratio * 30.0
 
 func take_damage(amount: float) -> void:
 	health -= amount
+	_update_health_bar()
 	if _target and is_instance_valid(_target):
 		_knockback = (global_position - _target.global_position).normalized() * 200.0
 	var spr = _anim_sprite if _anim_sprite else _single_sprite

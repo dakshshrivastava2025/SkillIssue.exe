@@ -90,11 +90,14 @@ const TRASH_TALK: Dictionary = {
 @onready var dialogue_label: Label       = $DialogueLabel
 @onready var health_bar: ProgressBar     = $HealthBar
 @onready var boss_poly: Polygon2D        = $BossPolygon
+var _hp_bar_fill: ColorRect = null
 
 func _ready() -> void:
 	add_to_group("enemy")
+	add_to_group("boss")
 	health = max_health
 	_target = get_tree().get_first_node_in_group("player")
+	_setup_health_bar()
 
 	if health_bar:
 		health_bar.max_value = max_health
@@ -303,8 +306,48 @@ func _try_aoe(delta: float) -> void:
 # Damage / Death
 # ---------------------------------------------------------------------------
 
+func _setup_health_bar() -> void:
+	if get_node_or_null("MobHealthBar"):
+		return
+	var bar_root = Node2D.new()
+	bar_root.name = "MobHealthBar"
+	bar_root.position = Vector2(0, -65)
+	bar_root.z_index = 5
+	add_child(bar_root)
+
+	# Background dark box
+	var bg = ColorRect.new()
+	bg.name = "BG"
+	bg.position = Vector2(-32, -3)
+	bg.size = Vector2(64, 6)
+	bg.color = Color(0.06, 0.06, 0.08, 0.9)
+	bar_root.add_child(bg)
+
+	# Border
+	var border = ReferenceRect.new()
+	border.position = Vector2(-32, -3)
+	border.size = Vector2(64, 6)
+	border.border_color = Color(0.3, 0.3, 0.35, 0.9)
+	border.border_width = 1.0
+	border.editor_only = false
+	bar_root.add_child(border)
+
+	# Red Fill
+	_hp_bar_fill = ColorRect.new()
+	_hp_bar_fill.name = "Fill"
+	_hp_bar_fill.position = Vector2(-30, -2)
+	_hp_bar_fill.size = Vector2(60, 4)
+	_hp_bar_fill.color = Color(0.95, 0.18, 0.18, 0.95)
+	bar_root.add_child(_hp_bar_fill)
+
+func _update_health_bar() -> void:
+	if _hp_bar_fill and is_instance_valid(_hp_bar_fill):
+		var ratio = clamp(health / max(1.0, max_health), 0.0, 1.0)
+		_hp_bar_fill.size.x = ratio * 60.0
+
 func take_damage(amount: float) -> void:
 	health -= amount
+	_update_health_bar()
 	if health_bar:
 		health_bar.value = health
 	# Flash
