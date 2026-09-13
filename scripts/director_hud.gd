@@ -471,13 +471,24 @@ func _build_death_screen() -> void:
 	sub.add_theme_font_size_override("font_size", 14)
 	vbox.add_child(sub)
 
+	var btn_hbox = HBoxContainer.new()
+	btn_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_hbox.add_theme_constant_override("separation", 16)
+	vbox.add_child(btn_hbox)
+
 	_retry_btn = Button.new()
 	_retry_btn.text = "RETRY (Press R)"
-	_retry_btn.custom_minimum_size = Vector2(200, 48)
-	_retry_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_retry_btn.custom_minimum_size = Vector2(160, 44)
 	_retry_btn.focus_mode = Control.FOCUS_ALL
 	_retry_btn.pressed.connect(_on_retry_pressed)
-	vbox.add_child(_retry_btn)
+	btn_hbox.add_child(_retry_btn)
+
+	var menu_btn = Button.new()
+	menu_btn.text = "TITLE MENU"
+	menu_btn.custom_minimum_size = Vector2(160, 44)
+	menu_btn.focus_mode = Control.FOCUS_ALL
+	menu_btn.pressed.connect(_on_title_menu_pressed)
+	btn_hbox.add_child(menu_btn)
 
 # ---------------------------------------------------------------------------
 # 8. F1 Debug Telemetry Panel
@@ -625,6 +636,18 @@ func _on_retry_pressed() -> void:
 		gm.load_room(0)
 	else:
 		get_tree().reload_current_scene()
+
+func _on_title_menu_pressed() -> void:
+	get_tree().paused = false
+	if _death_screen_root:
+		_death_screen_root.visible = false
+	var ai = get_node_or_null("/root/AIDirector")
+	if ai:
+		if ai.has_method("reset_full_session"):
+			ai.reset_full_session()
+		elif ai.has_method("reset"):
+			ai.reset()
+	get_tree().change_scene_to_file("res://scenes/title_screen.tscn")
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
