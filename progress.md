@@ -46,10 +46,10 @@ Each room follows an automated state-machine lifecycle:
 - **Clean Release:** Automatically disables and frees the collider on room clear without physics frame desync.
 
 ### 3. Dynamic 3-Stage Visual Door Transitions
-Each room uses customized transition assets to represent unlocking:
+Each room uses customized transition assets to represent unlocking naturally and immersively (without artificial blue box overlays or UI text clutter):
 | Level | Exit Style | Intact Sprite | Half-Open / Breaking | Fully Open / Broken | Transition Effect |
 |---|---|---|---|---|---|
-| **Room 1–2** | North Portal | *Dungeon wall arch* | — | `door_frame_open.png` | Glowing cyan/emerald portal shimmer |
+| **Room 1–2** | North Portal | *Dungeon wall arch* | — | `door_frame_open.png` | Natural wall arch opens |
 | **Room 3** | Iron Gate | `door_half_open.png` | Shake + Crossfade | `room3_door_fully_open.png` | Heavy iron bars open |
 | **Room 4** | Floor Abyss Grill | `room4_grill_intact.png` | `room4_grill_breaking.png` | `room4_grill_broken.png` | Metal grate cracks and shatters open |
 | **Room 5** | Boss Arena | Ritual Chamber | — | Victory State | Boss defeat transition |

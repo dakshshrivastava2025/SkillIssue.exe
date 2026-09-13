@@ -209,6 +209,8 @@ func _build_exit_door(env: Node2D) -> void:
 	var d_size = _get_exit_door_size()
 	shape.size = d_size
 	col.shape = shape
+	door.add_child(col)
+	
 	door.body_entered.connect(_on_door_entered)
 	door.z_as_relative = false
 	door.z_index = 3
@@ -291,7 +293,7 @@ func _on_door_entered(body: Node) -> void:
 		var current_time = Time.get_ticks_msec() / 1000.0
 		if current_time - _last_locked_warning_time > 1.5:
 			_last_locked_warning_time = current_time
-			print("[%s] Exit is locked! Defeat all enemies first." % room_name)
+			print("[%s] North Gate is locked! Defeat all enemies first." % room_name)
 			if _locked_sfx and is_instance_valid(_locked_sfx):
 				_locked_sfx.play()
 
@@ -413,7 +415,7 @@ func _on_room_cleared() -> void:
 	if _unlock_sfx and is_instance_valid(_unlock_sfx):
 		_unlock_sfx.play()
 
-	# Animate door opening (if room has door overlays)
+	# Animate door opening
 	_animate_door_opening()
 
 	# Check if player is already standing in the exit portal (distance-based, since
@@ -472,26 +474,3 @@ func _animate_door_opening() -> void:
 			fade.tween_property(spr_half, "modulate:a", 0.0, 0.4)
 		if spr_intact:
 			fade.tween_property(spr_intact, "modulate:a", 0.0, 0.4)
-
-func _show_temporary_banner(text: String, duration: float = 2.5) -> void:
-	var hud = get_tree().get_first_node_in_group("hud")
-	if hud and hud.has_method("show_banner"):
-		hud.show_banner(text)
-		return
-
-	# Fallback banner if HUD doesn't have custom banner method
-	var banner = Label.new()
-	banner.text = text
-	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	banner.position = Vector2(-250, -200)
-	banner.size = Vector2(500, 40)
-	banner.add_theme_color_override("font_color", Color(1.0, 0.95, 0.3, 1.0))
-	banner.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
-	banner.add_theme_constant_override("shadow_offset_x", 1)
-	banner.add_theme_constant_override("shadow_offset_y", 1)
-	add_child(banner)
-	
-	var tween = create_tween()
-	tween.tween_interval(duration)
-	tween.tween_property(banner, "modulate:a", 0.0, 0.5)
-	tween.tween_callback(banner.queue_free)
