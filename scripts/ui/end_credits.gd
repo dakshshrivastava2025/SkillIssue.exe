@@ -13,7 +13,7 @@ const TEAM_MEMBERS: Array[Dictionary] = [
 	{
 		"name": "ARK MAHESHWARI",
 		"role": "CORE ENGINE & ROOM ARCHITECTURE",
-		"quote": "\"5 rooms, zero bugs, infinite friction on ice!\"",
+		"quote": "\"5 rooms, zero bugs, zero friction on ice!\"",
 		"color": Color(0.4, 0.9, 1.0)
 	},
 	{
